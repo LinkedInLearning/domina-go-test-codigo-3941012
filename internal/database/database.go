@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"pokemon-battle/internal/models"
 	"strconv"
 	"time"
 
@@ -137,10 +138,18 @@ func (s *service) Close() error {
 	return s.db.Close()
 }
 
-type CRUDService interface {
-	Create(ctx context.Context, obj *any) error
+type PokemonCRUDService interface {
+	Create(ctx context.Context, obj *models.Pokemon) error
 	Delete(ctx context.Context, id int) error
-	GetAll(ctx context.Context) ([]any, error)
-	GetByID(ctx context.Context, id int) (any, error)
-	Update(ctx context.Context, obj any) error
+	GetAll(ctx context.Context) ([]models.Pokemon, error)
+	GetByID(ctx context.Context, id int) (models.Pokemon, error)
+	Update(ctx context.Context, obj models.Pokemon) error
+}
+
+type BattleCRUDService interface {
+	Create(ctx context.Context, obj *models.Battle) error
+	Delete(ctx context.Context, id int) error
+	GetAll(ctx context.Context) ([]models.Battle, error)
+	GetByID(ctx context.Context, id int) (models.Battle, error)
+	Update(ctx context.Context, obj models.Battle) error
 }

@@ -7,8 +7,8 @@ import (
 )
 
 type pokemonService struct {
-	// CRUDService is a generic CRUD service implemented by the service
-	CRUDService
+	// PokemonCRUDService is a generic CRUD service implemented by the service
+	PokemonCRUDService
 
 	// srv is the service with the actual database connection
 	srv Service

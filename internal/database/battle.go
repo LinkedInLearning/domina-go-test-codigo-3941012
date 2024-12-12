@@ -7,8 +7,8 @@ import (
 )
 
 type battleService struct {
-	// CRUDService is a generic CRUD service implemented by the service
-	CRUDService
+	// BattleCRUDService is a generic CRUD service implemented by the service
+	BattleCRUDService
 
 	// srv is the service with the actual database connection
 	srv Service
