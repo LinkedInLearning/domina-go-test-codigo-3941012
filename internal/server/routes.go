@@ -26,6 +26,12 @@ func (s *FiberServer) RegisterFiberRoutes() {
 	pokemonRoutes.Put("/:id", s.UpdatePokemon)
 	pokemonRoutes.Delete("/:id", s.DeletePokemon)
 
+	battleRoutes := s.App.Group("/battles")
+	battleRoutes.Post("/", s.CreateBattle)
+	battleRoutes.Get("/", s.GetAllBattles)
+	battleRoutes.Get("/:id", s.GetBattleByID)
+	battleRoutes.Put("/:id", s.UpdateBattle)
+	battleRoutes.Delete("/:id", s.DeleteBattle)
 }
 
 func (s *FiberServer) HelloWorldHandler(c *fiber.Ctx) error {
