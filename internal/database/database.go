@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -15,6 +16,8 @@ import (
 
 // Service represents a service that interacts with a database.
 type Service interface {
+	MustDB() *sql.DB
+
 	// Health returns a map of health status information.
 	// The keys and values in the map are service-specific.
 	Health() map[string]string
@@ -38,9 +41,19 @@ var (
 	dbInstance *service
 )
 
+const errNilDB = "database connection is nil"
+
+// validateDB checks if the database connection is nil
+func validateDB(db *sql.DB) error {
+	if db == nil {
+		return errors.New(errNilDB)
+	}
+	return nil
+}
+
 func New() Service {
-	// Reuse Connection
-	if dbInstance != nil {
+	// Reuse Connection if it's already initialized and healthy
+	if dbInstance != nil && dbInstance.db != nil && dbInstance.db.Ping() == nil {
 		return dbInstance
 	}
 	connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable&search_path=%s", username, password, host, port, database, schema)
@@ -105,6 +118,16 @@ func (s *service) Health() map[string]string {
 	return stats
 }
 
+// MustDB returns the database connection.
+// It panics if the database connection is nil.
+func (s *service) MustDB() *sql.DB {
+	if err := validateDB(s.db); err != nil {
+		panic(err)
+	}
+
+	return s.db
+}
+
 // Close closes the database connection.
 // It logs a message indicating the disconnection from the specific database.
 // If the connection is successfully closed, it returns nil.
@@ -112,4 +135,12 @@ func (s *service) Health() map[string]string {
 func (s *service) Close() error {
 	log.Printf("Disconnected from database: %s", database)
 	return s.db.Close()
+}
+
+type CRUDService interface {
+	Create(ctx context.Context, obj *any) error
+	Delete(ctx context.Context, id int) error
+	GetAll(ctx context.Context) ([]any, error)
+	GetByID(ctx context.Context, id int) (any, error)
+	Update(ctx context.Context, obj any) error
 }
