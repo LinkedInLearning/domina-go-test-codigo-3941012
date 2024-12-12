@@ -43,6 +43,8 @@ services:
     ports:
       - "${BLUEPRINT_DB_PORT}:5432"
     volumes:
+      - ./internal/database/testdata/00-schema.sql:/docker-entrypoint-initdb.d/00-schema.sql
+      - ./internal/database/testdata/01-inserts.sql:/docker-entrypoint-initdb.d/01-inserts.sql
       - psql_volume_bp:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "sh -c 'pg_isready -U ${BLUEPRINT_DB_USERNAME} -d ${BLUEPRINT_DB_DATABASE}'"]
