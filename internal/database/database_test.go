@@ -2,7 +2,9 @@ package database
 
 import (
 	"context"
+	_ "embed"
 	"log"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -13,9 +15,11 @@ import (
 
 func mustStartPostgresContainer() (func(context.Context) error, error) {
 	var (
-		dbName = "database"
-		dbPwd  = "password"
-		dbUser = "user"
+		dbName         = "pokemon_battles"
+		dbPwd          = "postgres"
+		dbUser         = "postgres"
+		initSQLFile    = filepath.Join("testdata", "00-schema.sql")
+		insertsSQLFile = filepath.Join("testdata", "01-inserts.sql")
 	)
 
 	dbContainer, err := postgres.Run(
@@ -24,6 +28,7 @@ func mustStartPostgresContainer() (func(context.Context) error, error) {
 		postgres.WithDatabase(dbName),
 		postgres.WithUsername(dbUser),
 		postgres.WithPassword(dbPwd),
+		postgres.WithInitScripts(initSQLFile, insertsSQLFile),
 		testcontainers.WithWaitStrategy(
 			wait.ForLog("database system is ready to accept connections").
 				WithOccurrence(2).
@@ -36,6 +41,7 @@ func mustStartPostgresContainer() (func(context.Context) error, error) {
 	database = dbName
 	password = dbPwd
 	username = dbUser
+	schema = "public"
 
 	dbHost, err := dbContainer.Host(context.Background())
 	if err != nil {
