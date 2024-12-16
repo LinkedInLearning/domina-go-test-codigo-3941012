@@ -4,6 +4,7 @@ import (
 	"pokemon-battle/internal/database"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/basicauth"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 )
 
@@ -15,6 +16,16 @@ func (s *FiberServer) RegisterFiberRoutes() {
 		AllowHeaders:     "Accept,Authorization,Content-Type",
 		AllowCredentials: false, // credentials require explicit origins
 		MaxAge:           300,
+	}))
+
+	// Apply Basic Auth middleware, only ash, misty and brock are allowed
+	// to access all the routes
+	s.App.Use(basicauth.New(basicauth.Config{
+		Users: map[string]string{
+			"ash":   "ketchum",
+			"misty": "waters",
+			"brock": "brock",
+		},
 	}))
 
 	s.App.Get("/", s.HelloWorldHandler)
@@ -43,8 +54,12 @@ func (s *FiberServer) RegisterFiberRoutes() {
 }
 
 func (s *FiberServer) HelloWorldHandler(c *fiber.Ctx) error {
+	// get the username and password from the context
+	username := c.Locals("username").(string)
+
 	resp := fiber.Map{
-		"message": "Welcome to Pokemon Battle!",
+		"message":  "Welcome to Pokemon Battle!",
+		"username": username,
 	}
 
 	return c.JSON(resp)
