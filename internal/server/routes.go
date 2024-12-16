@@ -1,6 +1,8 @@
 package server
 
 import (
+	"pokemon-battle/internal/database"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 )
@@ -19,19 +21,25 @@ func (s *FiberServer) RegisterFiberRoutes() {
 
 	s.App.Get("/health", s.healthHandler)
 
+	// init the pokemon routes from a pokemon service
+	pokemonServer := pokemonServer{srv: database.NewPokemonService()}
+
 	pokemonRoutes := s.App.Group("/pokemons")
-	pokemonRoutes.Post("/", s.CreatePokemon)
-	pokemonRoutes.Get("/", s.GetAllPokemons)
-	pokemonRoutes.Get("/:id", s.GetPokemonByID)
-	pokemonRoutes.Put("/:id", s.UpdatePokemon)
-	pokemonRoutes.Delete("/:id", s.DeletePokemon)
+	pokemonRoutes.Post("/", pokemonServer.CreatePokemon)
+	pokemonRoutes.Get("/", pokemonServer.GetAllPokemons)
+	pokemonRoutes.Get("/:id", pokemonServer.GetPokemonByID)
+	pokemonRoutes.Put("/:id", pokemonServer.UpdatePokemon)
+	pokemonRoutes.Delete("/:id", pokemonServer.DeletePokemon)
+
+	// init the battle routes from a battle service
+	battleServer := battleServer{srv: database.NewBattleService()}
 
 	battleRoutes := s.App.Group("/battles")
-	battleRoutes.Post("/", s.CreateBattle)
-	battleRoutes.Get("/", s.GetAllBattles)
-	battleRoutes.Get("/:id", s.GetBattleByID)
-	battleRoutes.Put("/:id", s.UpdateBattle)
-	battleRoutes.Delete("/:id", s.DeleteBattle)
+	battleRoutes.Post("/", battleServer.CreateBattle)
+	battleRoutes.Get("/", battleServer.GetAllBattles)
+	battleRoutes.Get("/:id", battleServer.GetBattleByID)
+	battleRoutes.Put("/:id", battleServer.UpdateBattle)
+	battleRoutes.Delete("/:id", battleServer.DeleteBattle)
 }
 
 func (s *FiberServer) HelloWorldHandler(c *fiber.Ctx) error {
