@@ -16,11 +16,27 @@ type pokemonServer struct {
 	srv database.PokemonCRUDService
 }
 
+type pokemonRequest struct {
+	Name    string `json:"name"`
+	Type    string `json:"type"`
+	HP      int    `json:"hp"`
+	Attack  int    `json:"attack"`
+	Defense int    `json:"defense"`
+}
+
 func (s *pokemonServer) CreatePokemon(c *fiber.Ctx) error {
 	ctx := context.Background()
-	var pokemon models.Pokemon
-	if err := c.BodyParser(&pokemon); err != nil {
+	var req pokemonRequest
+	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request"})
+	}
+
+	pokemon := models.Pokemon{
+		Name:    req.Name,
+		Type:    req.Type,
+		HP:      req.HP,
+		Attack:  req.Attack,
+		Defense: req.Defense,
 	}
 
 	err := s.srv.Create(ctx, &pokemon)
