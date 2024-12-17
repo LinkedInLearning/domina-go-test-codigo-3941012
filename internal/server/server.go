@@ -9,17 +9,19 @@ import (
 type FiberServer struct {
 	*fiber.App
 
-	db database.Service
+	db        database.Service
+	diceSides int
 }
 
-func New() *FiberServer {
+func New(diceSides int) *FiberServer {
 	server := &FiberServer{
 		App: fiber.New(fiber.Config{
 			ServerHeader: "pokemon-battle",
 			AppName:      "pokemon-battle",
 		}),
 
-		db: database.New(),
+		db:        database.New(),
+		diceSides: diceSides,
 	}
 
 	return server
