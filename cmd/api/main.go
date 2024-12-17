@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"pokemon-battle/internal/database"
 	"pokemon-battle/internal/server"
 	"strconv"
 	"syscall"
@@ -42,7 +43,7 @@ func main() {
 
 	server := server.New()
 
-	server.RegisterFiberRoutes()
+	server.RegisterFiberRoutes(database.NewPokemonService(), database.NewBattleService())
 
 	// Create a done channel to signal when the shutdown is complete
 	done := make(chan bool, 1)

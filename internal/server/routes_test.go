@@ -14,7 +14,7 @@ func TestHandler(t *testing.T) {
 	// Inject the Fiber app into the server
 	s := &FiberServer{App: app}
 
-	s.RegisterFiberRoutes()
+	s.RegisterFiberRoutes(&mockPokemonService{hasError: false}, &mockBattleService{hasError: false})
 
 	t.Run("get/", func(t *testing.T) {
 		// Create a test HTTP request

@@ -8,7 +8,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cors"
 )
 
-func (s *FiberServer) RegisterFiberRoutes() {
+func (s *FiberServer) RegisterFiberRoutes(pokemonSrv database.PokemonCRUDService, battleSrv database.BattleCRUDService) {
 	// Apply CORS middleware
 	s.App.Use(cors.New(cors.Config{
 		AllowOrigins:     "*",
@@ -33,7 +33,7 @@ func (s *FiberServer) RegisterFiberRoutes() {
 	s.App.Get("/health", s.healthHandler)
 
 	// init the pokemon routes from a pokemon service
-	pokemonServer := pokemonServer{srv: database.NewPokemonService()}
+	pokemonServer := pokemonServer{srv: pokemonSrv}
 
 	pokemonRoutes := s.App.Group("/pokemons")
 	pokemonRoutes.Post("/", pokemonServer.CreatePokemon)
@@ -43,7 +43,7 @@ func (s *FiberServer) RegisterFiberRoutes() {
 	pokemonRoutes.Delete("/:id", pokemonServer.DeletePokemon)
 
 	// init the battle routes from a battle service
-	battleServer := battleServer{srv: database.NewBattleService()}
+	battleServer := battleServer{srv: battleSrv}
 
 	battleRoutes := s.App.Group("/battles")
 	battleRoutes.Post("/", battleServer.CreateBattle)
