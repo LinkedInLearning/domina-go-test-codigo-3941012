@@ -28,8 +28,7 @@ func TestFight(t *testing.T) {
 			Defense: 1,
 		}
 
-		battle, err := business.Fight(10, p1, p2)
-		require.NoError(t, err)
+		battle := business.Fight(10, p1, p2)
 		require.Equal(t, battle.WinnerID, p1.ID)
 		require.Equal(t, battle.Turns, 1)
 	})
@@ -53,8 +52,7 @@ func TestFight(t *testing.T) {
 			Defense: 40,
 		}
 
-		battle, err := business.Fight(10, p1, p2)
-		require.NoError(t, err)
+		battle := business.Fight(10, p1, p2)
 		require.Equal(t, battle.WinnerID, p2.ID)
 		require.Equal(t, battle.Turns, 1)
 	})
@@ -78,8 +76,10 @@ func TestFight(t *testing.T) {
 			Defense: 40,
 		}
 
-		battle, err := business.Fight(10, p1, p2)
-		require.NoError(t, err)
+		battle := business.Fight(10, p1, p2)
 		require.Greater(t, battle.Turns, 1)
+		// ambos pokemons vuelven a su estado original tras la batalla
+		require.Equal(t, p1.HP, 100)
+		require.Equal(t, p2.HP, 100)
 	})
 }
