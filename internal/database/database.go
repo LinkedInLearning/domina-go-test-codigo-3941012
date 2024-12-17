@@ -9,6 +9,7 @@ import (
 	"os"
 	"pokemon-battle/internal/models"
 	"strconv"
+	"sync"
 	"time"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
@@ -40,12 +41,16 @@ var (
 	host       = os.Getenv("BLUEPRINT_DB_HOST")
 	schema     = os.Getenv("BLUEPRINT_DB_SCHEMA")
 	dbInstance *service
+	sbMu       sync.Mutex
 )
 
 const errNilDB = "database connection is nil"
 
 // validateDB checks if the database connection is nil
 func validateDB(db *sql.DB) error {
+	sbMu.Lock()
+	defer sbMu.Unlock()
+
 	if db == nil {
 		return errors.New(errNilDB)
 	}
@@ -53,19 +58,26 @@ func validateDB(db *sql.DB) error {
 }
 
 func New() Service {
+	sbMu.Lock()
+	defer sbMu.Unlock()
+
 	// Reuse Connection if it's already initialized and healthy
 	if dbInstance != nil && dbInstance.db != nil && dbInstance.db.Ping() == nil {
 		return dbInstance
 	}
+
+	return newService(username, password, host, port, database, schema)
+}
+
+func newService(username, password, host, port, database, schema string) Service {
 	connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable&search_path=%s", username, password, host, port, database, schema)
 	db, err := sql.Open("pgx", connStr)
 	if err != nil {
 		log.Fatal(err)
 	}
-	dbInstance = &service{
+	return &service{
 		db: db,
 	}
-	return dbInstance
 }
 
 // Health checks the health of the database connection by pinging the database.
