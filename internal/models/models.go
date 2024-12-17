@@ -34,6 +34,7 @@ type Battle struct {
 	ID         int `json:"id"`          // Identificador único de la batalla
 	Pokemon1ID int `json:"pokemon1_id"` // ID del primer Pokémon participante
 	Pokemon2ID int `json:"pokemon2_id"` // ID del segundo Pokémon participante
+	Turns      int `json:"turns"`       // Number of turns the battle lasted
 	WinnerID   int `json:"winner_id"`   // ID del Pokémon ganador
 }
 

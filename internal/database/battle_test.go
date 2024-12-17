@@ -21,6 +21,7 @@ func TestNewBattleService(t *testing.T) {
 			Pokemon1ID: 1,
 			Pokemon2ID: 2,
 			WinnerID:   1,
+			Turns:      10,
 		}
 
 		err := srv.Create(context.Background(), battle)
@@ -45,6 +46,7 @@ func TestNewBattleService(t *testing.T) {
 			Pokemon1ID: 1,
 			Pokemon2ID: 2,
 			WinnerID:   1,
+			Turns:      10,
 		}
 
 		err := srv.Create(context.Background(), battle)
@@ -122,6 +124,7 @@ func TestNewBattleService(t *testing.T) {
 				Pokemon1ID: pokemon1.ID,
 				Pokemon2ID: pokemon2.ID,
 				WinnerID:   pokemon2.ID, // Charizard always wins
+				Turns:      10,
 			}
 			err := srv.Create(context.Background(), battle)
 			if err != nil {
@@ -151,6 +154,7 @@ func TestNewBattleService(t *testing.T) {
 			Pokemon1ID: 1,
 			Pokemon2ID: 2,
 			WinnerID:   1,
+			Turns:      10,
 		}
 
 		err := srv.Create(context.Background(), b)
@@ -172,6 +176,10 @@ func TestNewBattleService(t *testing.T) {
 		if battle.ID != b.ID {
 			t.Fatalf("expected ID to be %d, got %d", b.ID, battle.ID)
 		}
+
+		if battle.Turns != b.Turns {
+			t.Fatalf("expected Turns to be %d, got %d", b.Turns, battle.Turns)
+		}
 	})
 
 	t.Run("Update", func(t *testing.T) {
@@ -179,6 +187,7 @@ func TestNewBattleService(t *testing.T) {
 			Pokemon1ID: 1,
 			Pokemon2ID: 2,
 			WinnerID:   1,
+			Turns:      10,
 		}
 
 		err := srv.Create(context.Background(), &battle)
@@ -193,6 +202,7 @@ func TestNewBattleService(t *testing.T) {
 		}()
 
 		battle.WinnerID = 2
+		battle.Turns = 5
 
 		err = srv.Update(context.Background(), battle)
 		if err != nil {
@@ -206,6 +216,10 @@ func TestNewBattleService(t *testing.T) {
 
 		if battle.WinnerID != 2 {
 			t.Fatalf("expected winnerID to be 2, got %d", battle.WinnerID)
+		}
+
+		if battle.Turns != 5 {
+			t.Fatalf("expected Turns to be 5, got %d", battle.Turns)
 		}
 	})
 }

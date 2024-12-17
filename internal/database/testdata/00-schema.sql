@@ -12,6 +12,7 @@ CREATE TABLE battles (
     pokemon1_id INT NOT NULL,
     pokemon2_id INT NOT NULL,
     winner_id INT NOT NULL,
+    turns INT NOT NULL,
     FOREIGN KEY (pokemon1_id) REFERENCES pokemons (id),
     FOREIGN KEY (pokemon2_id) REFERENCES pokemons (id),
     FOREIGN KEY (winner_id) REFERENCES pokemons (id)
