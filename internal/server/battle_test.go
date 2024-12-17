@@ -66,7 +66,7 @@ func TestCreateBattle(t *testing.T) {
 		battleRoutes := s.App.Group("/battles")
 
 		// init the battle routes from a mock battle service that doesn't return an error
-		battleServer := battleServer{srv: &mockBattleService{hasError: false}}
+		battleServer := battleServer{srv: &mockBattleService{hasError: false}, pokemonSrv: &mockPokemonService{hasError: false}, diceSides: 6}
 		battleRoutes.Post("/", battleServer.CreateBattle)
 
 		battle := models.Battle{
@@ -98,7 +98,43 @@ func TestCreateBattle(t *testing.T) {
 		battleRoutes := s.App.Group("/battles")
 
 		// init the battle routes from a mock battle service that returns an error
-		battleServer := battleServer{srv: &mockBattleService{hasError: true}}
+		// the pokemon service is mocked to not return an error
+		battleServer := battleServer{srv: &mockBattleService{hasError: true}, pokemonSrv: &mockPokemonService{hasError: false}, diceSides: 6}
+		battleRoutes.Post("/", battleServer.CreateBattle)
+
+		battle := models.Battle{
+			Pokemon1ID: 1,
+			Pokemon2ID: 2,
+		}
+		body, err := json.Marshal(battle)
+		if err != nil {
+			t.Fatalf("error marshalling battle. Err: %v", err)
+		}
+
+		req, err := http.NewRequest("POST", "/battles", bytes.NewBuffer(body))
+		req.Header.Set("Content-Type", "application/json")
+		if err != nil {
+			t.Fatalf("error creating request. Err: %v", err)
+		}
+
+		resp, err := app.Test(req)
+		if err != nil {
+			t.Fatalf("error making request to server. Err: %v", err)
+		}
+
+		if resp.StatusCode != http.StatusInternalServerError {
+			t.Errorf("expected status 500; got %v", resp.Status)
+		}
+	})
+
+	t.Run("error/pokemon-failed", func(t *testing.T) {
+		app := fiber.New()
+		s := &FiberServer{App: app}
+		battleRoutes := s.App.Group("/battles")
+
+		// init the battle routes from a mock battle service that returns an error
+		// the pokemon service is mocked to not return an error
+		battleServer := battleServer{srv: &mockBattleService{hasError: false}, pokemonSrv: &mockPokemonService{hasError: true}, diceSides: 6}
 		battleRoutes.Post("/", battleServer.CreateBattle)
 
 		battle := models.Battle{

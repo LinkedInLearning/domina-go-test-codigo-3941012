@@ -43,7 +43,7 @@ func (s *FiberServer) RegisterFiberRoutes(pokemonSrv database.PokemonCRUDService
 	pokemonRoutes.Delete("/:id", pokemonServer.DeletePokemon)
 
 	// init the battle routes from a battle service
-	battleServer := battleServer{srv: battleSrv}
+	battleServer := battleServer{srv: battleSrv, pokemonSrv: pokemonSrv, diceSides: s.diceSides}
 
 	battleRoutes := s.App.Group("/battles")
 	battleRoutes.Post("/", battleServer.CreateBattle)
