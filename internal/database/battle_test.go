@@ -10,7 +10,9 @@ import (
 )
 
 func TestNewBattleService(t *testing.T) {
-	srv := database.NewBattleService()
+	dbService := database.MustNewWithDatabase()
+
+	srv := database.NewBattleService(dbService)
 
 	if srv == nil {
 		t.Fatal("NewBattleService() returned nil")
@@ -78,7 +80,7 @@ func TestNewBattleService(t *testing.T) {
 	})
 
 	t.Run("GetAll/many", func(t *testing.T) {
-		pokemonSrv := database.NewPokemonService()
+		pokemonSrv := database.NewPokemonService(dbService)
 
 		pokemon1 := models.Pokemon{
 			Name:    "Pikachu",

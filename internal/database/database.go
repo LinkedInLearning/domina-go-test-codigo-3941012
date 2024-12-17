@@ -57,6 +57,10 @@ func validateDB(db *sql.DB) error {
 	return nil
 }
 
+// New returns a new database service.
+// If the database service is already initialized, it returns the same instance.
+// If the database service is not initialized, it initializes a new one.
+// Thread safe.
 func New() Service {
 	sbMu.Lock()
 	defer sbMu.Unlock()
@@ -66,10 +70,12 @@ func New() Service {
 		return dbInstance
 	}
 
-	return newService(username, password, host, port, database, schema)
+	return NewService(username, password, host, port, database, schema)
 }
 
-func newService(username, password, host, port, database, schema string) Service {
+// NewService creates a new database service with the given parameters
+// Not thread safe, use New() instead.
+func NewService(username, password, host, port, database, schema string) Service {
 	connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable&search_path=%s", username, password, host, port, database, schema)
 	db, err := sql.Open("pgx", connStr)
 	if err != nil {

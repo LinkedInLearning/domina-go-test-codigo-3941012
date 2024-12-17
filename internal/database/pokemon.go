@@ -14,9 +14,9 @@ type pokemonService struct {
 	srv Service
 }
 
-func NewPokemonService() *pokemonService {
+func NewPokemonService(srv Service) *pokemonService {
 	return &pokemonService{
-		srv: New(),
+		srv: srv,
 	}
 }
 

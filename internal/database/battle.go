@@ -14,9 +14,9 @@ type battleService struct {
 	srv Service
 }
 
-func NewBattleService() *battleService {
+func NewBattleService(srv Service) *battleService {
 	return &battleService{
-		srv: New(),
+		srv: srv,
 	}
 }
 

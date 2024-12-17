@@ -10,7 +10,7 @@ import (
 )
 
 func TestNewPokemonService(t *testing.T) {
-	srv := database.NewPokemonService()
+	srv := database.NewPokemonService(database.MustNewWithDatabase())
 
 	if srv == nil {
 		t.Fatal("NewPokemonService() returned nil")

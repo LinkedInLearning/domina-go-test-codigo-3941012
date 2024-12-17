@@ -44,7 +44,10 @@ func main() {
 
 	server := server.New(setupDiceSides())
 
-	server.RegisterFiberRoutes(database.NewPokemonService(), database.NewBattleService())
+	// Initialize the database service
+	srv := database.New()
+
+	server.RegisterFiberRoutes(database.NewPokemonService(srv), database.NewBattleService(srv))
 
 	// Create a done channel to signal when the shutdown is complete
 	done := make(chan bool, 1)
