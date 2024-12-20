@@ -30,14 +30,12 @@ func TestBattle_IT(t *testing.T) {
 				Pokemon1ID: 1,
 				Pokemon2ID: 2,
 			}
-			body, _ := json.Marshal(battleReq)
-
-			req, err := http.NewRequest("POST", "/battles", bytes.NewBuffer(body))
-			req.Header.Set("Content-Type", "application/json")
-			req.Header.Set("Authorization", "Basic YXNoOmtldGNodW0=") // base64 for ash:ketchum
+			body, err := json.Marshal(battleReq)
 			if err != nil {
-				t.Fatalf("error creating request. Err: %v", err)
+				t.Fatalf("error marshalling battle request. Err: %v", err)
 			}
+
+			req := createAuthenticatedRequest(t, "POST", "/battles", body)
 
 			resp, err := app.Test(req, -1) // disable timeout
 			if err != nil {
@@ -72,18 +70,9 @@ func TestBattle_IT(t *testing.T) {
 			Turns:      10,
 		}
 
-		// use the db layer to insert a battle
-		err := battleSrv.Create(context.Background(), &b)
-		if err != nil {
-			t.Fatalf("error inserting battle. Err: %v", err)
-		}
+		createBattleUsingDB(t, battleSrv, &b)
 
-		req, err := http.NewRequest("GET", "/battles/"+strconv.Itoa(b.ID), nil)
-		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Authorization", "Basic YXNoOmtldGNodW0=") // base64 for ash:ketchum
-		if err != nil {
-			t.Fatalf("error creating request. Err: %v", err)
-		}
+		req := createAuthenticatedRequest(t, "GET", "/battles/"+strconv.Itoa(b.ID), nil)
 
 		resp, err := app.Test(req, -1) // disable timeout
 		if err != nil {
@@ -121,19 +110,10 @@ func TestBattle_IT(t *testing.T) {
 				Turns:      10,
 			}
 
-			// use the db layer to insert a battle
-			err := battleSrv.Create(context.Background(), &b)
-			if err != nil {
-				t.Fatalf("error inserting battle. Err: %v", err)
-			}
+			createBattleUsingDB(t, battleSrv, &b)
 		}
 
-		req, err := http.NewRequest("GET", "/battles", nil)
-		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Authorization", "Basic YXNoOmtldGNodW0=") // base64 for ash:ketchum
-		if err != nil {
-			t.Fatalf("error creating request. Err: %v", err)
-		}
+		req := createAuthenticatedRequest(t, "GET", "/battles", nil)
 
 		resp, err := app.Test(req, -1) // disable timeout
 		if err != nil {
@@ -164,11 +144,7 @@ func TestBattle_IT(t *testing.T) {
 			Turns:      10,
 		}
 
-		// use the db layer to insert a battle
-		err := battleSrv.Create(context.Background(), &b)
-		if err != nil {
-			t.Fatalf("error inserting battle. Err: %v", err)
-		}
+		createBattleUsingDB(t, battleSrv, &b)
 
 		// update the battle
 		b.WinnerID = 2
@@ -179,12 +155,7 @@ func TestBattle_IT(t *testing.T) {
 			t.Fatalf("error marshalling battle. Err: %v", err)
 		}
 
-		req, err := http.NewRequest("PUT", "/battles/"+strconv.Itoa(b.ID), bytes.NewBuffer(body))
-		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Authorization", "Basic YXNoOmtldGNodW0=") // base64 for ash:ketchum
-		if err != nil {
-			t.Fatalf("error creating request. Err: %v", err)
-		}
+		req := createAuthenticatedRequest(t, "PUT", "/battles/"+strconv.Itoa(b.ID), body)
 
 		resp, err := app.Test(req, -1) // disable timeout
 		if err != nil {
@@ -215,18 +186,9 @@ func TestBattle_IT(t *testing.T) {
 			Turns:      10,
 		}
 
-		// use the db layer to insert a battle
-		err := battleSrv.Create(context.Background(), &b)
-		if err != nil {
-			t.Fatalf("error inserting battle. Err: %v", err)
-		}
+		createBattleUsingDB(t, battleSrv, &b)
 
-		req, err := http.NewRequest("DELETE", "/battles/"+strconv.Itoa(b.ID), nil)
-		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Authorization", "Basic YXNoOmtldGNodW0=") // base64 for ash:ketchum
-		if err != nil {
-			t.Fatalf("error creating request. Err: %v", err)
-		}
+		req := createAuthenticatedRequest(t, "DELETE", "/battles/"+strconv.Itoa(b.ID), nil)
 
 		resp, err := app.Test(req, -1) // disable timeout
 		if err != nil {
@@ -248,4 +210,31 @@ func TestBattle_IT(t *testing.T) {
 			t.Errorf("expected battle ID to be 0; got %v", battle.ID)
 		}
 	})
+}
+
+// createAuthenticatedRequest is a helper function to create an authenticated request,
+// passing the correct headers and body: Content-Type: application/json and Authorization: Basic YXNoOmtldGNodW0=,
+// which is the base64 encoded string for the username and password used in tests: ash:ketchum
+func createAuthenticatedRequest(t *testing.T, method, path string, body []byte) *http.Request {
+	t.Helper()
+
+	req, err := http.NewRequest(method, path, bytes.NewBuffer(body))
+	if err != nil {
+		t.Fatalf("error creating request. Err: %v", err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Basic YXNoOmtldGNodW0=") // base64 for ash:ketchum
+
+	return req
+}
+
+// createBattleUsingDB is a helper function to create a battle using the database service
+func createBattleUsingDB(t *testing.T, srv database.BattleCRUDService, b *models.Battle) {
+	t.Helper()
+
+	err := srv.Create(context.Background(), b)
+	if err != nil {
+		t.Fatalf("error inserting battle. Err: %v", err)
+	}
 }

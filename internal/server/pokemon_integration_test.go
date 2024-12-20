@@ -1,7 +1,6 @@
 package server
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"net/http"
@@ -35,12 +34,7 @@ func TestPokemon_IT(t *testing.T) {
 			}
 			body, _ := json.Marshal(pokemonReq)
 
-			req, err := http.NewRequest("POST", "/pokemons", bytes.NewBuffer(body))
-			req.Header.Set("Content-Type", "application/json")
-			req.Header.Set("Authorization", "Basic YXNoOmtldGNodW0=") // base64 for ash:ketchum
-			if err != nil {
-				t.Fatalf("error creating request. Err: %v", err)
-			}
+			req := createAuthenticatedRequest(t, "POST", "/pokemons", body)
 
 			resp, err := app.Test(req, -1) // disable timeout
 			if err != nil {
@@ -81,18 +75,9 @@ func TestPokemon_IT(t *testing.T) {
 			Defense: 49,
 		}
 
-		// use the db layer to insert a pokemon
-		err := pokemonSrv.Create(context.Background(), &p)
-		if err != nil {
-			t.Fatalf("error inserting pokemon. Err: %v", err)
-		}
+		createPokemonUsingDB(t, pokemonSrv, &p)
 
-		req, err := http.NewRequest("GET", "/pokemons/"+strconv.Itoa(p.ID), nil)
-		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Authorization", "Basic YXNoOmtldGNodW0=") // base64 for ash:ketchum
-		if err != nil {
-			t.Fatalf("error creating request. Err: %v", err)
-		}
+		req := createAuthenticatedRequest(t, "GET", "/pokemons/"+strconv.Itoa(p.ID), nil)
 
 		resp, err := app.Test(req, -1) // disable timeout
 		if err != nil {
@@ -131,19 +116,10 @@ func TestPokemon_IT(t *testing.T) {
 				Defense: 49,
 			}
 
-			// use the db layer to insert a battle
-			err := pokemonSrv.Create(context.Background(), &p)
-			if err != nil {
-				t.Fatalf("error inserting pokemon. Err: %v", err)
-			}
+			createPokemonUsingDB(t, pokemonSrv, &p)
 		}
 
-		req, err := http.NewRequest("GET", "/pokemons", nil)
-		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Authorization", "Basic YXNoOmtldGNodW0=") // base64 for ash:ketchum
-		if err != nil {
-			t.Fatalf("error creating request. Err: %v", err)
-		}
+		req := createAuthenticatedRequest(t, "GET", "/pokemons", nil)
 
 		resp, err := app.Test(req, -1) // disable timeout
 		if err != nil {
@@ -175,11 +151,7 @@ func TestPokemon_IT(t *testing.T) {
 			Defense: 49,
 		}
 
-		// use the db layer to insert a pokemon
-		err := pokemonSrv.Create(context.Background(), &p)
-		if err != nil {
-			t.Fatalf("error inserting pokemon. Err: %v", err)
-		}
+		createPokemonUsingDB(t, pokemonSrv, &p)
 
 		// update the pokemon
 		p.HP = 50
@@ -191,12 +163,7 @@ func TestPokemon_IT(t *testing.T) {
 			t.Fatalf("error marshalling pokemon. Err: %v", err)
 		}
 
-		req, err := http.NewRequest("PUT", "/pokemons/"+strconv.Itoa(p.ID), bytes.NewBuffer(body))
-		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Authorization", "Basic YXNoOmtldGNodW0=") // base64 for ash:ketchum
-		if err != nil {
-			t.Fatalf("error creating request. Err: %v", err)
-		}
+		req := createAuthenticatedRequest(t, "PUT", "/pokemons/"+strconv.Itoa(p.ID), body)
 
 		resp, err := app.Test(req, -1) // disable timeout
 		if err != nil {
@@ -228,18 +195,9 @@ func TestPokemon_IT(t *testing.T) {
 			Defense: 49,
 		}
 
-		// use the db layer to insert a pokemon
-		err := pokemonSrv.Create(context.Background(), &p)
-		if err != nil {
-			t.Fatalf("error inserting pokemon. Err: %v", err)
-		}
+		createPokemonUsingDB(t, pokemonSrv, &p)
 
-		req, err := http.NewRequest("DELETE", "/pokemons/"+strconv.Itoa(p.ID), nil)
-		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Authorization", "Basic YXNoOmtldGNodW0=") // base64 for ash:ketchum
-		if err != nil {
-			t.Fatalf("error creating request. Err: %v", err)
-		}
+		req := createAuthenticatedRequest(t, "DELETE", "/pokemons/"+strconv.Itoa(p.ID), nil)
 
 		resp, err := app.Test(req, -1) // disable timeout
 		if err != nil {
@@ -261,4 +219,14 @@ func TestPokemon_IT(t *testing.T) {
 			t.Errorf("expected pokemon ID to be 0; got %v", pokemon.ID)
 		}
 	})
+}
+
+// createPokemonUsingDB is a helper function to create a pokemon using the database service
+func createPokemonUsingDB(t *testing.T, srv database.PokemonCRUDService, p *models.Pokemon) {
+	t.Helper()
+
+	err := srv.Create(context.Background(), p)
+	if err != nil {
+		t.Fatalf("error inserting pokemon. Err: %v", err)
+	}
 }

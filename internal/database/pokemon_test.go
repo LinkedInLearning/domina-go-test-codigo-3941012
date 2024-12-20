@@ -17,24 +17,8 @@ func TestNewPokemonService(t *testing.T) {
 	}
 
 	t.Run("Create", func(t *testing.T) {
-		pokemon := &models.Pokemon{
-			Name:    "Pikachu",
-			Type:    "Electric",
-			HP:      100,
-			Attack:  55,
-			Defense: 40,
-		}
-
-		err := srv.Create(context.Background(), pokemon)
-		if err != nil {
-			t.Fatalf("expected Create() to return nil, got %v", err)
-		}
-		defer func() {
-			err = srv.Delete(context.Background(), pokemon.ID)
-			if err != nil {
-				t.Fatalf("expected Delete() to return nil, got %v", err)
-			}
-		}()
+		pokemon := createTestPokemon(t, srv)
+		defer cleanupPokemon(t, srv, pokemon.ID)
 
 		if pokemon.ID <= 100 {
 			t.Fatalf("expected ID to be greater than 100, got %d", pokemon.ID)
@@ -42,20 +26,9 @@ func TestNewPokemonService(t *testing.T) {
 	})
 
 	t.Run("Delete", func(t *testing.T) {
-		pokemon := &models.Pokemon{
-			Name:    "Pikachu",
-			Type:    "Electric",
-			HP:      100,
-			Attack:  55,
-			Defense: 40,
-		}
+		pokemon := createTestPokemon(t, srv)
 
-		err := srv.Create(context.Background(), pokemon)
-		if err != nil {
-			t.Fatalf("expected Create() to return nil, got %v", err)
-		}
-
-		err = srv.Delete(context.Background(), pokemon.ID)
+		err := srv.Delete(context.Background(), pokemon.ID)
 		if err != nil {
 			t.Fatalf("expected Delete() to return nil, got %v", err)
 		}
@@ -94,28 +67,12 @@ func TestNewPokemonService(t *testing.T) {
 	})
 
 	t.Run("Update", func(t *testing.T) {
-		pokemon := models.Pokemon{
-			Name:    "Pikachu",
-			Type:    "Electric",
-			HP:      100,
-			Attack:  55,
-			Defense: 40,
-		}
-
-		err := srv.Create(context.Background(), &pokemon)
-		if err != nil {
-			t.Fatalf("expected Create() to return nil, got %v", err)
-		}
-		defer func() {
-			err = srv.Delete(context.Background(), pokemon.ID)
-			if err != nil {
-				t.Fatalf("expected Delete() to return nil, got %v", err)
-			}
-		}()
+		pokemon := createTestPokemon(t, srv)
+		defer cleanupPokemon(t, srv, pokemon.ID)
 
 		pokemon.Name = "Test Pikachu"
 
-		err = srv.Update(context.Background(), pokemon)
+		err := srv.Update(context.Background(), pokemon)
 		if err != nil {
 			t.Fatalf("expected Update() to return nil, got %v", err)
 		}
@@ -129,4 +86,33 @@ func TestNewPokemonService(t *testing.T) {
 			t.Fatalf("expected name to be 'Test Pikachu', got %s", pokemon.Name)
 		}
 	})
+}
+
+// createTestPokemon is a helper function to create a pokemon for testing
+func createTestPokemon(t *testing.T, srv database.PokemonCRUDService) models.Pokemon {
+	t.Helper()
+
+	pokemon := models.Pokemon{
+		Name:    "Pikachu",
+		Type:    "Electric",
+		HP:      100,
+		Attack:  55,
+		Defense: 40,
+	}
+
+	err := srv.Create(context.Background(), &pokemon)
+	if err != nil {
+		t.Fatalf("expected Create() to return nil, got %v", err)
+	}
+	return pokemon
+}
+
+// cleanupPokemon is a helper function to delete a pokemon from the database
+func cleanupPokemon(t *testing.T, srv database.PokemonCRUDService, id int) {
+	t.Helper()
+
+	err := srv.Delete(context.Background(), id)
+	if err != nil {
+		t.Fatalf("expected Delete() to return nil, got %v", err)
+	}
 }

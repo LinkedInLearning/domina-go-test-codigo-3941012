@@ -19,44 +19,18 @@ func TestNewBattleService(t *testing.T) {
 	}
 
 	t.Run("Create", func(t *testing.T) {
-		battle := &models.Battle{
-			Pokemon1ID: 1,
-			Pokemon2ID: 2,
-			WinnerID:   1,
-			Turns:      10,
-		}
+		battle := createTestBattle(t, srv)
+		defer cleanupBattle(t, srv, battle.ID)
 
-		err := srv.Create(context.Background(), battle)
-		if err != nil {
-			t.Fatalf("expected Create() to return nil, got %v", err)
-		}
-		defer func() {
-			err = srv.Delete(context.Background(), battle.ID)
-			if err != nil {
-				t.Fatalf("expected Delete() to return nil, got %v", err)
-			}
-		}()
-
-		// There is no battle in the testdata/01-inserts.sql file, so the ID should be 1
 		if battle.ID != 1 {
 			t.Fatalf("expected ID to be 1, got %d", battle.ID)
 		}
 	})
 
 	t.Run("Delete", func(t *testing.T) {
-		battle := &models.Battle{
-			Pokemon1ID: 1,
-			Pokemon2ID: 2,
-			WinnerID:   1,
-			Turns:      10,
-		}
+		battle := createTestBattle(t, srv)
 
-		err := srv.Create(context.Background(), battle)
-		if err != nil {
-			t.Fatalf("expected Create() to return nil, got %v", err)
-		}
-
-		err = srv.Delete(context.Background(), battle.ID)
+		err := srv.Delete(context.Background(), battle.ID)
 		if err != nil {
 			t.Fatalf("expected Delete() to return nil, got %v", err)
 		}
@@ -73,7 +47,6 @@ func TestNewBattleService(t *testing.T) {
 			t.Fatalf("expected GetAll() to return nil, got %v", err)
 		}
 
-		// There are no battles in the testdata/01-inserts.sql file, so the length should be 0
 		if len(battles) != 0 {
 			t.Fatalf("expected GetAll() to return 0 battles, got %d", len(battles))
 		}
@@ -145,31 +118,14 @@ func TestNewBattleService(t *testing.T) {
 			t.Fatalf("expected GetAll() to return nil, got %v", err)
 		}
 
-		// There are no battles in the testdata/01-inserts.sql file, so the length should be 0
 		if len(battles) != count {
 			t.Fatalf("expected GetAll() to return %d battles, got %d", count, len(battles))
 		}
 	})
 
 	t.Run("GetByID", func(t *testing.T) {
-		b := &models.Battle{
-			Pokemon1ID: 1,
-			Pokemon2ID: 2,
-			WinnerID:   1,
-			Turns:      10,
-		}
-
-		err := srv.Create(context.Background(), b)
-		if err != nil {
-			t.Fatalf("expected Create() to return nil, got %v", err)
-		}
-		defer func() {
-			err = srv.Delete(context.Background(), b.ID)
-			if err != nil {
-				t.Fatalf("expected Delete() to return nil, got %v", err)
-			}
-		}()
-
+		b := createTestBattle(t, srv)
+		defer cleanupBattle(t, srv, b.ID)
 		battle, err := srv.GetByID(context.Background(), b.ID)
 		if err != nil {
 			t.Fatalf("expected GetByID() to return nil, got %v", err)
@@ -185,28 +141,12 @@ func TestNewBattleService(t *testing.T) {
 	})
 
 	t.Run("Update", func(t *testing.T) {
-		battle := models.Battle{
-			Pokemon1ID: 1,
-			Pokemon2ID: 2,
-			WinnerID:   1,
-			Turns:      10,
-		}
-
-		err := srv.Create(context.Background(), &battle)
-		if err != nil {
-			t.Fatalf("expected Create() to return nil, got %v", err)
-		}
-		defer func() {
-			err = srv.Delete(context.Background(), battle.ID)
-			if err != nil {
-				t.Fatalf("expected Delete() to return nil, got %v", err)
-			}
-		}()
-
+		battle := createTestBattle(t, srv)
+		defer cleanupBattle(t, srv, battle.ID)
 		battle.WinnerID = 2
 		battle.Turns = 5
 
-		err = srv.Update(context.Background(), battle)
+		err := srv.Update(context.Background(), battle)
 		if err != nil {
 			t.Fatalf("expected Update() to return nil, got %v", err)
 		}
@@ -224,4 +164,32 @@ func TestNewBattleService(t *testing.T) {
 			t.Fatalf("expected Turns to be 5, got %d", battle.Turns)
 		}
 	})
+}
+
+// createTestBattle is a helper function to create a battle for testing
+func createTestBattle(t *testing.T, srv database.BattleCRUDService) models.Battle {
+	t.Helper()
+
+	battle := models.Battle{
+		Pokemon1ID: 1,
+		Pokemon2ID: 2,
+		WinnerID:   1,
+		Turns:      10,
+	}
+
+	err := srv.Create(context.Background(), &battle)
+	if err != nil {
+		t.Fatalf("expected Create() to return nil, got %v", err)
+	}
+	return battle
+}
+
+// cleanupBattle is a helper function to delete a battle from the database
+func cleanupBattle(t *testing.T, srv database.BattleCRUDService, id int) {
+	t.Helper()
+
+	err := srv.Delete(context.Background(), id)
+	if err != nil {
+		t.Fatalf("expected Delete() to return nil, got %v", err)
+	}
 }
