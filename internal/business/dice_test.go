@@ -2,6 +2,8 @@ package business
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func testSavageRoll(t *testing.T, sides int) {
@@ -27,12 +29,10 @@ func testSavageRoll(t *testing.T, sides int) {
 	roll := savageDice.Roll()
 	lowerBound := savageDice.Explosions*savageDice.Sides + 1
 	upperBound := (savageDice.Explosions + 1) * savageDice.Sides
-	if roll < lowerBound {
-		t.Fatalf("expected roll to be greater than %d, got %d", lowerBound, roll)
-	}
-	if roll > upperBound {
-		t.Fatalf("expected roll to be less than %d, got %d", upperBound, roll)
-	}
+
+	require.GreaterOrEqual(t, roll, lowerBound)
+	require.LessOrEqual(t, roll, upperBound)
+
 	t.Logf("sides: %d, roll: %d, rolls: %v, explosions: %d, lowerBound: %d, upperBound: %d", sides, roll, savageDice.rolls, savageDice.Explosions, lowerBound, upperBound)
 }
 
@@ -75,9 +75,7 @@ func TestSavageDice(t *testing.T) {
 			// Porque el dado es de 1 cara, siempre explotará,
 			// llegando al máximo de 50.
 			roll := oneSidedDice.Roll()
-			if roll != 50 {
-				t.Fatalf("expected roll to be 50, got %d", roll)
-			}
+			require.Equal(t, 50, roll)
 		})
 	})
 
@@ -107,12 +105,8 @@ func TestSavageDice(t *testing.T) {
 				}
 
 				roll := baseDice.Roll()
-				if roll <= 0 {
-					t.Fatalf("expected roll to be greater than 0, got %d", roll)
-				}
-				if roll > baseDice.Sides {
-					t.Fatalf("expected roll to be less than or equal to %d, got %d", baseDice.Sides, roll)
-				}
+				require.Greater(t, roll, 0)
+				require.LessOrEqual(t, roll, baseDice.Sides)
 			})
 		}
 	})

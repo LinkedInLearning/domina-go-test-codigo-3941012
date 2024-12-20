@@ -10,6 +10,8 @@ import (
 	"testing"
 
 	"pokemon-battle/internal/models"
+
+	"github.com/stretchr/testify/require"
 )
 
 // mockPokemonService is used for testing the pokemon routes
@@ -68,40 +70,35 @@ func TestGetAllPokemons(t *testing.T) {
 
 		// Create a test HTTP request
 		req, err := http.NewRequest("GET", "/pokemons", nil)
-		if err != nil {
-			t.Fatalf("error creating request. Err: %v", err)
-		}
+		require.NoError(t, err)
 		// Perform the request
 		resp, err := s.App.Test(req)
-		if err != nil {
-			t.Fatalf("error making request to server. Err: %v", err)
-		}
+		require.NoError(t, err)
 		defer resp.Body.Close()
 
-		if resp.StatusCode != http.StatusOK {
-			t.Errorf("expected status OK; got %v", resp.Status)
-		}
+		require.Equal(t, resp.StatusCode, http.StatusOK)
 
 		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			t.Fatalf("error reading response body. Err: %v", err)
-		}
+		require.NoError(t, err)
 
 		var pokemons []models.Pokemon
 		err = json.Unmarshal(body, &pokemons)
-		if err != nil {
-			t.Fatalf("error unmarshalling response body. Err: %v", err)
-		}
-		if len(pokemons) != 2 {
-			t.Errorf("expected 2 pokemons; got %v", len(pokemons))
-		}
+		require.NoError(t, err)
+		require.Equal(t, len(pokemons), 2)
 
-		if pokemons[0].ID != 1 || pokemons[0].Name != "Pikachu" || pokemons[0].Type != "Electric" || pokemons[0].HP != 10 || pokemons[0].Attack != 10 || pokemons[0].Defense != 10 {
-			t.Errorf("expected Pikachu; got %v", pokemons[0])
-		}
-		if pokemons[1].ID != 2 || pokemons[1].Name != "Charmander" || pokemons[1].Type != "Fire" || pokemons[1].HP != 10 || pokemons[1].Attack != 10 || pokemons[1].Defense != 10 {
-			t.Errorf("expected Charmander; got %v", pokemons[1])
-		}
+		require.Equal(t, pokemons[0].ID, 1)
+		require.Equal(t, pokemons[0].Name, "Pikachu")
+		require.Equal(t, pokemons[0].Type, "Electric")
+		require.Equal(t, pokemons[0].HP, 10)
+		require.Equal(t, pokemons[0].Attack, 10)
+		require.Equal(t, pokemons[0].Defense, 10)
+
+		require.Equal(t, pokemons[1].ID, 2)
+		require.Equal(t, pokemons[1].Name, "Charmander")
+		require.Equal(t, pokemons[1].Type, "Fire")
+		require.Equal(t, pokemons[1].HP, 10)
+		require.Equal(t, pokemons[1].Attack, 10)
+		require.Equal(t, pokemons[1].Defense, 10)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -115,18 +112,12 @@ func TestGetAllPokemons(t *testing.T) {
 
 		// Create a test HTTP request
 		req, err := http.NewRequest("GET", "/pokemons", nil)
-		if err != nil {
-			t.Fatalf("error creating request. Err: %v", err)
-		}
+		require.NoError(t, err)
 		// Perform the request
 		resp, err := s.App.Test(req)
-		if err != nil {
-			t.Fatalf("error making request to server. Err: %v", err)
-		}
+		require.NoError(t, err)
 
-		if resp.StatusCode != http.StatusInternalServerError {
-			t.Errorf("expected status 500; got %v", resp.Status)
-		}
+		require.Equal(t, resp.StatusCode, http.StatusInternalServerError)
 	})
 }
 
@@ -147,25 +138,17 @@ func TestCreatePokemon(t *testing.T) {
 			Defense: 49,
 		}
 		body, err := json.Marshal(pokemon)
-		if err != nil {
-			t.Fatalf("error marshalling pokemon. Err: %v", err)
-		}
+		require.NoError(t, err)
 
 		req, err := http.NewRequest("POST", "/pokemons", bytes.NewBuffer(body))
 		req.Header.Set("Content-Type", "application/json")
-		if err != nil {
-			t.Fatalf("error creating request. Err: %v", err)
-		}
+		require.NoError(t, err)
 
 		resp, err := s.App.Test(req)
-		if err != nil {
-			t.Fatalf("error making request to server. Err: %v", err)
-		}
+		require.NoError(t, err)
 		defer resp.Body.Close()
 
-		if resp.StatusCode != http.StatusCreated {
-			t.Errorf("expected status Created; got %v", resp.Status)
-		}
+		require.Equal(t, resp.StatusCode, http.StatusCreated)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -181,24 +164,16 @@ func TestCreatePokemon(t *testing.T) {
 			Type: "Grass",
 		}
 		body, err := json.Marshal(pokemon)
-		if err != nil {
-			t.Fatalf("error marshalling pokemon. Err: %v", err)
-		}
+		require.NoError(t, err)
 
 		req, err := http.NewRequest("POST", "/pokemons", bytes.NewBuffer(body))
 		req.Header.Set("Content-Type", "application/json")
-		if err != nil {
-			t.Fatalf("error creating request. Err: %v", err)
-		}
+		require.NoError(t, err)
 
 		resp, err := s.App.Test(req)
-		if err != nil {
-			t.Fatalf("error making request to server. Err: %v", err)
-		}
+		require.NoError(t, err)
 
-		if resp.StatusCode != http.StatusInternalServerError {
-			t.Errorf("expected status 500; got %v", resp.Status)
-		}
+		require.Equal(t, resp.StatusCode, http.StatusInternalServerError)
 	})
 }
 
@@ -212,19 +187,13 @@ func TestGetPokemonByID(t *testing.T) {
 		pokemonRoutes.Get("/:id", pokemonServer.GetPokemonByID)
 
 		req, err := http.NewRequest("GET", "/pokemons/1", nil)
-		if err != nil {
-			t.Fatalf("error creating request. Err: %v", err)
-		}
+		require.NoError(t, err)
 
 		resp, err := s.App.Test(req)
-		if err != nil {
-			t.Fatalf("error making request to server. Err: %v", err)
-		}
+		require.NoError(t, err)
 		defer resp.Body.Close()
 
-		if resp.StatusCode != http.StatusOK {
-			t.Errorf("expected status OK; got %v", resp.Status)
-		}
+		require.Equal(t, resp.StatusCode, http.StatusOK)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -236,18 +205,12 @@ func TestGetPokemonByID(t *testing.T) {
 		pokemonRoutes.Get("/:id", pokemonServer.GetPokemonByID)
 
 		req, err := http.NewRequest("GET", "/pokemons/1", nil)
-		if err != nil {
-			t.Fatalf("error creating request. Err: %v", err)
-		}
+		require.NoError(t, err)
 
 		resp, err := s.App.Test(req)
-		if err != nil {
-			t.Fatalf("error making request to server. Err: %v", err)
-		}
+		require.NoError(t, err)
 
-		if resp.StatusCode != http.StatusInternalServerError {
-			t.Errorf("expected status 500; got %v", resp.Status)
-		}
+		require.Equal(t, resp.StatusCode, http.StatusInternalServerError)
 	})
 }
 
@@ -272,19 +235,13 @@ func TestUpdatePokemon(t *testing.T) {
 
 		req, err := http.NewRequest("PUT", "/pokemons/1", bytes.NewBuffer(body))
 		req.Header.Set("Content-Type", "application/json")
-		if err != nil {
-			t.Fatalf("error creating request. Err: %v", err)
-		}
+		require.NoError(t, err)
 
 		resp, err := s.App.Test(req)
-		if err != nil {
-			t.Fatalf("error making request to server. Err: %v", err)
-		}
+		require.NoError(t, err)
 		defer resp.Body.Close()
 
-		if resp.StatusCode != http.StatusOK {
-			t.Errorf("expected status OK; got %v", resp.Status)
-		}
+		require.Equal(t, resp.StatusCode, http.StatusOK)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -304,18 +261,12 @@ func TestUpdatePokemon(t *testing.T) {
 
 		req, err := http.NewRequest("PUT", "/pokemons/1", bytes.NewBuffer(body))
 		req.Header.Set("Content-Type", "application/json")
-		if err != nil {
-			t.Fatalf("error creating request. Err: %v", err)
-		}
+		require.NoError(t, err)
 
 		resp, err := s.App.Test(req)
-		if err != nil {
-			t.Fatalf("error making request to server. Err: %v", err)
-		}
+		require.NoError(t, err)
 
-		if resp.StatusCode != http.StatusInternalServerError {
-			t.Errorf("expected status 500; got %v", resp.Status)
-		}
+		require.Equal(t, resp.StatusCode, http.StatusInternalServerError)
 	})
 }
 
@@ -329,19 +280,13 @@ func TestDeletePokemon(t *testing.T) {
 		pokemonRoutes.Delete("/:id", pokemonServer.DeletePokemon)
 
 		req, err := http.NewRequest("DELETE", "/pokemons/1", nil)
-		if err != nil {
-			t.Fatalf("error creating request. Err: %v", err)
-		}
+		require.NoError(t, err)
 
 		resp, err := s.App.Test(req)
-		if err != nil {
-			t.Fatalf("error making request to server. Err: %v", err)
-		}
+		require.NoError(t, err)
 		defer resp.Body.Close()
 
-		if resp.StatusCode != http.StatusNoContent {
-			t.Errorf("expected status NoContent; got %v", resp.Status)
-		}
+		require.Equal(t, resp.StatusCode, http.StatusNoContent)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -353,17 +298,11 @@ func TestDeletePokemon(t *testing.T) {
 		pokemonRoutes.Delete("/:id", pokemonServer.DeletePokemon)
 
 		req, err := http.NewRequest("DELETE", "/pokemons/1", nil)
-		if err != nil {
-			t.Fatalf("error creating request. Err: %v", err)
-		}
+		require.NoError(t, err)
 
 		resp, err := s.App.Test(req)
-		if err != nil {
-			t.Fatalf("error making request to server. Err: %v", err)
-		}
+		require.NoError(t, err)
 
-		if resp.StatusCode != http.StatusInternalServerError {
-			t.Errorf("expected status 500; got %v", resp.Status)
-		}
+		require.Equal(t, resp.StatusCode, http.StatusInternalServerError)
 	})
 }

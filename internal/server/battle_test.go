@@ -10,6 +10,8 @@ import (
 	"testing"
 
 	"pokemon-battle/internal/models"
+
+	"github.com/stretchr/testify/require"
 )
 
 // mockBattleService is used for testing the battle routes
@@ -75,19 +77,13 @@ func TestCreateBattle(t *testing.T) {
 
 		req, err := http.NewRequest("POST", "/battles", bytes.NewBuffer(body))
 		req.Header.Set("Content-Type", "application/json")
-		if err != nil {
-			t.Fatalf("error creating request. Err: %v", err)
-		}
+		require.NoError(t, err)
 
 		resp, err := s.App.Test(req)
-		if err != nil {
-			t.Fatalf("error making request to server. Err: %v", err)
-		}
+		require.NoError(t, err)
 		defer resp.Body.Close()
 
-		if resp.StatusCode != http.StatusCreated {
-			t.Errorf("expected status Created; got %v", resp.Status)
-		}
+		require.Equal(t, resp.StatusCode, http.StatusCreated)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -104,24 +100,16 @@ func TestCreateBattle(t *testing.T) {
 			Pokemon2ID: 2,
 		}
 		body, err := json.Marshal(battle)
-		if err != nil {
-			t.Fatalf("error marshalling battle. Err: %v", err)
-		}
+		require.NoError(t, err)
 
 		req, err := http.NewRequest("POST", "/battles", bytes.NewBuffer(body))
 		req.Header.Set("Content-Type", "application/json")
-		if err != nil {
-			t.Fatalf("error creating request. Err: %v", err)
-		}
+		require.NoError(t, err)
 
 		resp, err := s.App.Test(req)
-		if err != nil {
-			t.Fatalf("error making request to server. Err: %v", err)
-		}
+		require.NoError(t, err)
 
-		if resp.StatusCode != http.StatusInternalServerError {
-			t.Errorf("expected status 500; got %v", resp.Status)
-		}
+		require.Equal(t, resp.StatusCode, http.StatusInternalServerError)
 	})
 
 	t.Run("error/pokemon-failed", func(t *testing.T) {
@@ -138,24 +126,16 @@ func TestCreateBattle(t *testing.T) {
 			Pokemon2ID: 2,
 		}
 		body, err := json.Marshal(battle)
-		if err != nil {
-			t.Fatalf("error marshalling battle. Err: %v", err)
-		}
+		require.NoError(t, err)
 
 		req, err := http.NewRequest("POST", "/battles", bytes.NewBuffer(body))
 		req.Header.Set("Content-Type", "application/json")
-		if err != nil {
-			t.Fatalf("error creating request. Err: %v", err)
-		}
+		require.NoError(t, err)
 
 		resp, err := s.App.Test(req)
-		if err != nil {
-			t.Fatalf("error making request to server. Err: %v", err)
-		}
+		require.NoError(t, err)
 
-		if resp.StatusCode != http.StatusInternalServerError {
-			t.Errorf("expected status 500; got %v", resp.Status)
-		}
+		require.Equal(t, resp.StatusCode, http.StatusInternalServerError)
 	})
 }
 
@@ -169,33 +149,21 @@ func TestGetAllBattles(t *testing.T) {
 		battleRoutes.Get("/", battleServer.GetAllBattles)
 
 		req, err := http.NewRequest("GET", "/battles", nil)
-		if err != nil {
-			t.Fatalf("error creating request. Err: %v", err)
-		}
+		require.NoError(t, err)
 
 		resp, err := s.App.Test(req)
-		if err != nil {
-			t.Fatalf("error making request to server. Err: %v", err)
-		}
+		require.NoError(t, err)
 		defer resp.Body.Close()
 
-		if resp.StatusCode != http.StatusOK {
-			t.Errorf("expected status OK; got %v", resp.Status)
-		}
+		require.Equal(t, resp.StatusCode, http.StatusOK)
 
 		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			t.Fatalf("error reading response body. Err: %v", err)
-		}
+		require.NoError(t, err)
 
 		var battles []models.Battle
 		err = json.Unmarshal(body, &battles)
-		if err != nil {
-			t.Fatalf("error unmarshalling response body. Err: %v", err)
-		}
-		if len(battles) != 2 {
-			t.Errorf("expected 2 battles; got %v", len(battles))
-		}
+		require.NoError(t, err)
+		require.Equal(t, len(battles), 2)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -207,18 +175,11 @@ func TestGetAllBattles(t *testing.T) {
 		battleRoutes.Get("/", battleServer.GetAllBattles)
 
 		req, err := http.NewRequest("GET", "/battles", nil)
-		if err != nil {
-			t.Fatalf("error creating request. Err: %v", err)
-		}
+		require.NoError(t, err)
 
 		resp, err := s.App.Test(req)
-		if err != nil {
-			t.Fatalf("error making request to server. Err: %v", err)
-		}
-
-		if resp.StatusCode != http.StatusInternalServerError {
-			t.Errorf("expected status 500; got %v", resp.Status)
-		}
+		require.NoError(t, err)
+		require.Equal(t, resp.StatusCode, http.StatusInternalServerError)
 	})
 }
 
@@ -232,19 +193,13 @@ func TestGetBattleByID(t *testing.T) {
 		battleRoutes.Get("/:id", battleServer.GetBattleByID)
 
 		req, err := http.NewRequest("GET", "/battles/1", nil)
-		if err != nil {
-			t.Fatalf("error creating request. Err: %v", err)
-		}
+		require.NoError(t, err)
 
 		resp, err := s.App.Test(req)
-		if err != nil {
-			t.Fatalf("error making request to server. Err: %v", err)
-		}
+		require.NoError(t, err)
 		defer resp.Body.Close()
 
-		if resp.StatusCode != http.StatusOK {
-			t.Errorf("expected status OK; got %v", resp.Status)
-		}
+		require.Equal(t, resp.StatusCode, http.StatusOK)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -256,18 +211,12 @@ func TestGetBattleByID(t *testing.T) {
 		battleRoutes.Get("/:id", battleServer.GetBattleByID)
 
 		req, err := http.NewRequest("GET", "/battles/1", nil)
-		if err != nil {
-			t.Fatalf("error creating request. Err: %v", err)
-		}
+		require.NoError(t, err)
 
 		resp, err := s.App.Test(req)
-		if err != nil {
-			t.Fatalf("error making request to server. Err: %v", err)
-		}
+		require.NoError(t, err)
 
-		if resp.StatusCode != http.StatusInternalServerError {
-			t.Errorf("expected status 500; got %v", resp.Status)
-		}
+		require.Equal(t, resp.StatusCode, http.StatusInternalServerError)
 	})
 }
 
@@ -287,25 +236,17 @@ func TestUpdateBattle(t *testing.T) {
 			WinnerID:   1,
 		}
 		body, err := json.Marshal(battle)
-		if err != nil {
-			t.Fatalf("error marshalling battle. Err: %v", err)
-		}
+		require.NoError(t, err)
 
 		req, err := http.NewRequest("PUT", "/battles/1", bytes.NewBuffer(body))
 		req.Header.Set("Content-Type", "application/json")
-		if err != nil {
-			t.Fatalf("error creating request. Err: %v", err)
-		}
+		require.NoError(t, err)
 
 		resp, err := s.App.Test(req)
-		if err != nil {
-			t.Fatalf("error making request to server. Err: %v", err)
-		}
+		require.NoError(t, err)
 		defer resp.Body.Close()
 
-		if resp.StatusCode != http.StatusOK {
-			t.Errorf("expected status OK; got %v", resp.Status)
-		}
+		require.Equal(t, resp.StatusCode, http.StatusOK)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -322,24 +263,16 @@ func TestUpdateBattle(t *testing.T) {
 			Pokemon2ID: 2,
 		}
 		body, err := json.Marshal(battle)
-		if err != nil {
-			t.Fatalf("error marshalling battle. Err: %v", err)
-		}
+		require.NoError(t, err)
 
 		req, err := http.NewRequest("PUT", "/battles/1", bytes.NewBuffer(body))
 		req.Header.Set("Content-Type", "application/json")
-		if err != nil {
-			t.Fatalf("error creating request. Err: %v", err)
-		}
+		require.NoError(t, err)
 
 		resp, err := s.App.Test(req)
-		if err != nil {
-			t.Fatalf("error making request to server. Err: %v", err)
-		}
+		require.NoError(t, err)
 
-		if resp.StatusCode != http.StatusInternalServerError {
-			t.Errorf("expected status 500; got %v", resp.Status)
-		}
+		require.Equal(t, resp.StatusCode, http.StatusInternalServerError)
 	})
 }
 
@@ -353,19 +286,13 @@ func TestDeleteBattle(t *testing.T) {
 		battleRoutes.Delete("/:id", battleServer.DeleteBattle)
 
 		req, err := http.NewRequest("DELETE", "/battles/1", nil)
-		if err != nil {
-			t.Fatalf("error creating request. Err: %v", err)
-		}
+		require.NoError(t, err)
 
 		resp, err := s.App.Test(req)
-		if err != nil {
-			t.Fatalf("error making request to server. Err: %v", err)
-		}
+		require.NoError(t, err)
 		defer resp.Body.Close()
 
-		if resp.StatusCode != http.StatusNoContent {
-			t.Errorf("expected status NoContent; got %v", resp.Status)
-		}
+		require.Equal(t, resp.StatusCode, http.StatusNoContent)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -377,17 +304,11 @@ func TestDeleteBattle(t *testing.T) {
 		battleRoutes.Delete("/:id", battleServer.DeleteBattle)
 
 		req, err := http.NewRequest("DELETE", "/battles/1", nil)
-		if err != nil {
-			t.Fatalf("error creating request. Err: %v", err)
-		}
+		require.NoError(t, err)
 
 		resp, err := s.App.Test(req)
-		if err != nil {
-			t.Fatalf("error making request to server. Err: %v", err)
-		}
+		require.NoError(t, err)
 
-		if resp.StatusCode != http.StatusInternalServerError {
-			t.Errorf("expected status 500; got %v", resp.Status)
-		}
+		require.Equal(t, resp.StatusCode, http.StatusInternalServerError)
 	})
 }

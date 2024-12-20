@@ -7,49 +7,38 @@ import (
 
 	"pokemon-battle/internal/database"
 	"pokemon-battle/internal/models"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestNewBattleService(t *testing.T) {
 	dbService := database.MustNewWithDatabase(t)
 
 	srv := database.NewBattleService(dbService)
-
-	if srv == nil {
-		t.Fatal("NewBattleService() returned nil")
-	}
+	require.NotNil(t, srv)
 
 	t.Run("Create", func(t *testing.T) {
 		battle := createTestBattle(t, srv)
 		defer cleanupBattle(t, srv, battle.ID)
 
-		if battle.ID != 1 {
-			t.Fatalf("expected ID to be 1, got %d", battle.ID)
-		}
+		require.Equal(t, 1, battle.ID)
 	})
 
 	t.Run("Delete", func(t *testing.T) {
 		battle := createTestBattle(t, srv)
 
 		err := srv.Delete(context.Background(), battle.ID)
-		if err != nil {
-			t.Fatalf("expected Delete() to return nil, got %v", err)
-		}
+		require.NoError(t, err)
 
 		_, err = srv.GetByID(context.Background(), battle.ID)
-		if err != sql.ErrNoRows {
-			t.Fatalf("expected GetByID() to return sql.ErrNoRows, got %v", err)
-		}
+		require.Error(t, err)
+		require.ErrorIs(t, err, sql.ErrNoRows)
 	})
 
 	t.Run("GetAll/zero", func(t *testing.T) {
 		battles, err := srv.GetAll(context.Background())
-		if err != nil {
-			t.Fatalf("expected GetAll() to return nil, got %v", err)
-		}
-
-		if len(battles) != 0 {
-			t.Fatalf("expected GetAll() to return 0 battles, got %d", len(battles))
-		}
+		require.NoError(t, err)
+		require.Equal(t, 0, len(battles))
 	})
 
 	t.Run("GetAll/many", func(t *testing.T) {
@@ -64,14 +53,10 @@ func TestNewBattleService(t *testing.T) {
 		}
 
 		err := pokemonSrv.Create(context.Background(), &pokemon1)
-		if err != nil {
-			t.Fatalf("expected Create() to return nil, got %v", err)
-		}
+		require.NoError(t, err)
 		defer func() {
 			err = pokemonSrv.Delete(context.Background(), pokemon1.ID)
-			if err != nil {
-				t.Fatalf("expected Delete() to return nil, got %v", err)
-			}
+			require.NoError(t, err)
 		}()
 
 		pokemon2 := models.Pokemon{
@@ -83,14 +68,10 @@ func TestNewBattleService(t *testing.T) {
 		}
 
 		err = pokemonSrv.Create(context.Background(), &pokemon2)
-		if err != nil {
-			t.Fatalf("expected Create() to return nil, got %v", err)
-		}
+		require.NoError(t, err)
 		defer func() {
 			err = pokemonSrv.Delete(context.Background(), pokemon2.ID)
-			if err != nil {
-				t.Fatalf("expected Delete() to return nil, got %v", err)
-			}
+			require.NoError(t, err)
 		}()
 
 		count := 100
@@ -102,42 +83,26 @@ func TestNewBattleService(t *testing.T) {
 				Turns:      10,
 			}
 			err := srv.Create(context.Background(), battle)
-			if err != nil {
-				t.Fatalf("expected Create() to return nil, got %v", err)
-			}
+			require.NoError(t, err)
 			defer func() {
 				err = srv.Delete(context.Background(), battle.ID)
-				if err != nil {
-					t.Fatalf("expected Delete() to return nil, got %v", err)
-				}
+				require.NoError(t, err)
 			}()
 		}
 
 		battles, err := srv.GetAll(context.Background())
-		if err != nil {
-			t.Fatalf("expected GetAll() to return nil, got %v", err)
-		}
-
-		if len(battles) != count {
-			t.Fatalf("expected GetAll() to return %d battles, got %d", count, len(battles))
-		}
+		require.NoError(t, err)
+		require.Equal(t, count, len(battles))
 	})
 
 	t.Run("GetByID", func(t *testing.T) {
 		b := createTestBattle(t, srv)
 		defer cleanupBattle(t, srv, b.ID)
+
 		battle, err := srv.GetByID(context.Background(), b.ID)
-		if err != nil {
-			t.Fatalf("expected GetByID() to return nil, got %v", err)
-		}
-
-		if battle.ID != b.ID {
-			t.Fatalf("expected ID to be %d, got %d", b.ID, battle.ID)
-		}
-
-		if battle.Turns != b.Turns {
-			t.Fatalf("expected Turns to be %d, got %d", b.Turns, battle.Turns)
-		}
+		require.NoError(t, err)
+		require.Equal(t, b.ID, battle.ID)
+		require.Equal(t, b.Turns, battle.Turns)
 	})
 
 	t.Run("Update", func(t *testing.T) {
@@ -147,22 +112,12 @@ func TestNewBattleService(t *testing.T) {
 		battle.Turns = 5
 
 		err := srv.Update(context.Background(), battle)
-		if err != nil {
-			t.Fatalf("expected Update() to return nil, got %v", err)
-		}
+		require.NoError(t, err)
 
 		battle, err = srv.GetByID(context.Background(), battle.ID)
-		if err != nil {
-			t.Fatalf("expected GetByID() to return nil, got %v", err)
-		}
-
-		if battle.WinnerID != 2 {
-			t.Fatalf("expected winnerID to be 2, got %d", battle.WinnerID)
-		}
-
-		if battle.Turns != 5 {
-			t.Fatalf("expected Turns to be 5, got %d", battle.Turns)
-		}
+		require.NoError(t, err)
+		require.Equal(t, 2, battle.WinnerID)
+		require.Equal(t, 5, battle.Turns)
 	})
 }
 
@@ -178,9 +133,8 @@ func createTestBattle(t *testing.T, srv database.BattleCRUDService) models.Battl
 	}
 
 	err := srv.Create(context.Background(), &battle)
-	if err != nil {
-		t.Fatalf("expected Create() to return nil, got %v", err)
-	}
+	require.NoError(t, err)
+
 	return battle
 }
 
@@ -189,7 +143,5 @@ func cleanupBattle(t *testing.T, srv database.BattleCRUDService, id int) {
 	t.Helper()
 
 	err := srv.Delete(context.Background(), id)
-	if err != nil {
-		t.Fatalf("expected Delete() to return nil, got %v", err)
-	}
+	require.NoError(t, err)
 }

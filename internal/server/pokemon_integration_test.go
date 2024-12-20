@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"net/http"
 	"strconv"
@@ -9,6 +10,8 @@ import (
 
 	"pokemon-battle/internal/database"
 	"pokemon-battle/internal/models"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestPokemon_IT(t *testing.T) {
@@ -34,32 +37,21 @@ func TestPokemon_IT(t *testing.T) {
 			req := createAuthenticatedRequest(t, "POST", "/pokemons", body)
 
 			resp, err := s.App.Test(req, -1) // disable timeout
-			if err != nil {
-				t.Fatalf("error making request to server. Err: %v", err)
-			}
+			require.NoError(t, err)
 			defer resp.Body.Close()
 
-			if resp.StatusCode != http.StatusCreated {
-				t.Errorf("expected status Created; got %v", resp.Status)
-			}
+			require.Equal(t, resp.StatusCode, http.StatusCreated)
 
 			var pokemonResponse models.Pokemon
 			err = json.NewDecoder(resp.Body).Decode(&pokemonResponse)
-			if err != nil {
-				t.Fatalf("error decoding response. Err: %v", err)
-			}
+			require.NoError(t, err)
 
-			if pokemonResponse.ID == 0 {
-				t.Errorf("expected pokemon ID to be greater than 0; got %v", pokemonResponse.ID)
-			}
-			if pokemonResponse.Name != pokemonReq.Name ||
-				pokemonResponse.Type != pokemonReq.Type ||
-				pokemonResponse.HP != pokemonReq.HP ||
-				pokemonResponse.Attack != pokemonReq.Attack ||
-				pokemonResponse.Defense != pokemonReq.Defense {
-
-				t.Errorf("expected pokemon to be %v; got %v", pokemonReq, pokemonResponse)
-			}
+			require.Greater(t, pokemonResponse.ID, 0)
+			require.Equal(t, pokemonResponse.Name, pokemonReq.Name)
+			require.Equal(t, pokemonResponse.Type, pokemonReq.Type)
+			require.Equal(t, pokemonResponse.HP, pokemonReq.HP)
+			require.Equal(t, pokemonResponse.Attack, pokemonReq.Attack)
+			require.Equal(t, pokemonResponse.Defense, pokemonReq.Defense)
 		})
 	})
 
@@ -77,31 +69,21 @@ func TestPokemon_IT(t *testing.T) {
 		req := createAuthenticatedRequest(t, "GET", "/pokemons/"+strconv.Itoa(p.ID), nil)
 
 		resp, err := s.App.Test(req, -1) // disable timeout
-		if err != nil {
-			t.Fatalf("error making request to server. Err: %v", err)
-		}
+		require.NoError(t, err)
 		defer resp.Body.Close()
 
-		if resp.StatusCode != http.StatusOK {
-			t.Errorf("expected status OK; got %v", resp.Status)
-		}
+		require.Equal(t, resp.StatusCode, http.StatusOK)
 
 		var pokemonResponse models.Pokemon
 		err = json.NewDecoder(resp.Body).Decode(&pokemonResponse)
-		if err != nil {
-			t.Fatalf("error decoding response. Err: %v", err)
-		}
+		require.NoError(t, err)
 
-		if pokemonResponse.ID != p.ID {
-			t.Errorf("expected pokemon ID to be %v; got %v", p.ID, pokemonResponse.ID)
-		}
+		require.Equal(t, pokemonResponse.ID, p.ID)
 	})
 
 	t.Run("get-all", func(t *testing.T) {
 		initialPokemons, err := pokemonSrv.GetAll(context.Background())
-		if err != nil {
-			t.Fatalf("error getting pokemons. Err: %v", err)
-		}
+		require.NoError(t, err)
 
 		// insert 10 pokemons
 		for i := 0; i < 10; i++ {
@@ -119,24 +101,16 @@ func TestPokemon_IT(t *testing.T) {
 		req := createAuthenticatedRequest(t, "GET", "/pokemons", nil)
 
 		resp, err := s.App.Test(req, -1) // disable timeout
-		if err != nil {
-			t.Fatalf("error making request to server. Err: %v", err)
-		}
+		require.NoError(t, err)
 		defer resp.Body.Close()
 
-		if resp.StatusCode != http.StatusOK {
-			t.Errorf("expected status OK; got %v", resp.Status)
-		}
+		require.Equal(t, resp.StatusCode, http.StatusOK)
 
 		var pokemons []models.Pokemon
 		err = json.NewDecoder(resp.Body).Decode(&pokemons)
-		if err != nil {
-			t.Fatalf("error decoding response. Err: %v", err)
-		}
+		require.NoError(t, err)
 
-		if len(pokemons) != len(initialPokemons)+10 {
-			t.Errorf("expected %v pokemons; got %v", len(initialPokemons)+10, len(pokemons))
-		}
+		require.Equal(t, len(pokemons), len(initialPokemons)+10)
 	})
 
 	t.Run("update", func(t *testing.T) {
@@ -156,31 +130,23 @@ func TestPokemon_IT(t *testing.T) {
 		p.Defense = 51
 
 		body, err := json.Marshal(p)
-		if err != nil {
-			t.Fatalf("error marshalling pokemon. Err: %v", err)
-		}
+		require.NoError(t, err)
 
 		req := createAuthenticatedRequest(t, "PUT", "/pokemons/"+strconv.Itoa(p.ID), body)
 
 		resp, err := s.App.Test(req, -1) // disable timeout
-		if err != nil {
-			t.Fatalf("error making request to server. Err: %v", err)
-		}
+		require.NoError(t, err)
 		defer resp.Body.Close()
 
-		if resp.StatusCode != http.StatusOK {
-			t.Errorf("expected status OK; got %v", resp.Status)
-		}
+		require.Equal(t, resp.StatusCode, http.StatusOK)
 
 		// get the pokemon from the db
 		pokemon, err := pokemonSrv.GetByID(context.Background(), p.ID)
-		if err != nil {
-			t.Fatalf("error getting pokemon. Err: %v", err)
-		}
+		require.NoError(t, err)
 
-		if pokemon.HP != p.HP || pokemon.Attack != p.Attack || pokemon.Defense != p.Defense {
-			t.Errorf("expected HP to be %v, Attack to be %v, and Defense to be %v; got %v, %v, and %v", p.HP, p.Attack, p.Defense, pokemon.HP, pokemon.Attack, pokemon.Defense)
-		}
+		require.Equal(t, pokemon.HP, p.HP)
+		require.Equal(t, pokemon.Attack, p.Attack)
+		require.Equal(t, pokemon.Defense, p.Defense)
 	})
 
 	t.Run("delete", func(t *testing.T) {
@@ -197,24 +163,16 @@ func TestPokemon_IT(t *testing.T) {
 		req := createAuthenticatedRequest(t, "DELETE", "/pokemons/"+strconv.Itoa(p.ID), nil)
 
 		resp, err := s.App.Test(req, -1) // disable timeout
-		if err != nil {
-			t.Fatalf("error making request to server. Err: %v", err)
-		}
+		require.NoError(t, err)
 		defer resp.Body.Close()
 
-		if resp.StatusCode != http.StatusNoContent {
-			t.Errorf("expected status NoContent; got %v", resp.Status)
-		}
+		require.Equal(t, resp.StatusCode, http.StatusNoContent)
 
 		// get the pokemon from the db
 		pokemon, err := pokemonSrv.GetByID(context.Background(), p.ID)
-		if err == nil {
-			t.Fatalf("expected error getting pokemon. Err: %v", err)
-		}
-
-		if pokemon.ID != 0 {
-			t.Errorf("expected pokemon ID to be 0; got %v", pokemon.ID)
-		}
+		require.Error(t, err)
+		require.ErrorIs(t, err, sql.ErrNoRows)
+		require.Equal(t, pokemon.ID, 0)
 	})
 }
 
@@ -223,7 +181,5 @@ func createPokemonUsingDB(t *testing.T, srv database.PokemonCRUDService, p *mode
 	t.Helper()
 
 	err := srv.Create(context.Background(), p)
-	if err != nil {
-		t.Fatalf("error inserting pokemon. Err: %v", err)
-	}
+	require.NoError(t, err)
 }

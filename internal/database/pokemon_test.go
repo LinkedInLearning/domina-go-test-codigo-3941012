@@ -7,63 +7,42 @@ import (
 
 	"pokemon-battle/internal/database"
 	"pokemon-battle/internal/models"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestNewPokemonService(t *testing.T) {
 	srv := database.NewPokemonService(database.MustNewWithDatabase(t))
-
-	if srv == nil {
-		t.Fatal("NewPokemonService() returned nil")
-	}
+	require.NotNil(t, srv)
 
 	t.Run("Create", func(t *testing.T) {
 		pokemon := createTestPokemon(t, srv)
 		defer cleanupPokemon(t, srv, pokemon.ID)
 
-		if pokemon.ID <= 100 {
-			t.Fatalf("expected ID to be greater than 100, got %d", pokemon.ID)
-		}
+		require.Greater(t, pokemon.ID, 100)
 	})
 
 	t.Run("Delete", func(t *testing.T) {
 		pokemon := createTestPokemon(t, srv)
 
-		err := srv.Delete(context.Background(), pokemon.ID)
-		if err != nil {
-			t.Fatalf("expected Delete() to return nil, got %v", err)
-		}
+		require.NoError(t, srv.Delete(context.Background(), pokemon.ID))
 
-		_, err = srv.GetByID(context.Background(), pokemon.ID)
-		if err != sql.ErrNoRows {
-			t.Fatalf("expected GetByID() to return sql.ErrNoRows, got %v", err)
-		}
+		_, err := srv.GetByID(context.Background(), pokemon.ID)
+		require.ErrorIs(t, err, sql.ErrNoRows)
 	})
 
 	t.Run("GetAll", func(t *testing.T) {
 		pokemons, err := srv.GetAll(context.Background())
-		if err != nil {
-			t.Fatalf("expected GetAll() to return nil, got %v", err)
-		}
-
+		require.NoError(t, err)
 		// There are 100 pokemons in the testdata/01-inserts.sql file
-		if len(pokemons) != 100 {
-			t.Fatalf("expected GetAll() to return 100 pokemons, got %d", len(pokemons))
-		}
+		require.Len(t, pokemons, 100)
 	})
 
 	t.Run("GetByID", func(t *testing.T) {
 		pokemon, err := srv.GetByID(context.Background(), 1)
-		if err != nil {
-			t.Fatalf("expected GetByID() to return nil, got %v", err)
-		}
-
-		if pokemon.ID != 1 {
-			t.Fatalf("expected ID to be 1, got %d", pokemon.ID)
-		}
-
-		if pokemon.Name != "Pikachu" {
-			t.Fatalf("expected name to be 'Pikachu', got %s", pokemon.Name)
-		}
+		require.NoError(t, err)
+		require.Equal(t, 1, pokemon.ID)
+		require.Equal(t, "Pikachu", pokemon.Name)
 	})
 
 	t.Run("Update", func(t *testing.T) {
@@ -72,19 +51,11 @@ func TestNewPokemonService(t *testing.T) {
 
 		pokemon.Name = "Test Pikachu"
 
-		err := srv.Update(context.Background(), pokemon)
-		if err != nil {
-			t.Fatalf("expected Update() to return nil, got %v", err)
-		}
+		require.NoError(t, srv.Update(context.Background(), pokemon))
 
-		pokemon, err = srv.GetByID(context.Background(), pokemon.ID)
-		if err != nil {
-			t.Fatalf("expected GetByID() to return nil, got %v", err)
-		}
-
-		if pokemon.Name != "Test Pikachu" {
-			t.Fatalf("expected name to be 'Test Pikachu', got %s", pokemon.Name)
-		}
+		pokemon, err := srv.GetByID(context.Background(), pokemon.ID)
+		require.NoError(t, err)
+		require.Equal(t, "Test Pikachu", pokemon.Name)
 	})
 }
 
@@ -101,9 +72,8 @@ func createTestPokemon(t *testing.T, srv database.PokemonCRUDService) models.Pok
 	}
 
 	err := srv.Create(context.Background(), &pokemon)
-	if err != nil {
-		t.Fatalf("expected Create() to return nil, got %v", err)
-	}
+	require.NoError(t, err)
+
 	return pokemon
 }
 
@@ -112,7 +82,5 @@ func cleanupPokemon(t *testing.T, srv database.PokemonCRUDService, id int) {
 	t.Helper()
 
 	err := srv.Delete(context.Background(), id)
-	if err != nil {
-		t.Fatalf("expected Delete() to return nil, got %v", err)
-	}
+	require.NoError(t, err)
 }

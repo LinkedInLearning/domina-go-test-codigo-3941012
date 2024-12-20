@@ -3,6 +3,7 @@ package server
 import (
 	"bytes"
 	"context"
+	"database/sql"
 	"encoding/json"
 	"net/http"
 	"strconv"
@@ -10,6 +11,8 @@ import (
 
 	"pokemon-battle/internal/database"
 	"pokemon-battle/internal/models"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestBattle_IT(t *testing.T) {
@@ -29,16 +32,12 @@ func TestBattle_IT(t *testing.T) {
 				Pokemon2ID: 2,
 			}
 			body, err := json.Marshal(battleReq)
-			if err != nil {
-				t.Fatalf("error marshalling battle request. Err: %v", err)
-			}
+			require.NoError(t, err)
 
 			req := createAuthenticatedRequest(t, "POST", "/battles", body)
 
 			resp, err := s.App.Test(req, -1) // disable timeout
-			if err != nil {
-				t.Fatalf("error making request to server. Err: %v", err)
-			}
+			require.NoError(t, err)
 			defer resp.Body.Close()
 
 			if resp.StatusCode != http.StatusCreated {
@@ -47,16 +46,10 @@ func TestBattle_IT(t *testing.T) {
 
 			var battleResponse models.Battle
 			err = json.NewDecoder(resp.Body).Decode(&battleResponse)
-			if err != nil {
-				t.Fatalf("error decoding response. Err: %v", err)
-			}
-
-			if battleResponse.ID == 0 {
-				t.Errorf("expected battle ID to be greater than 0; got %v", battleResponse.ID)
-			}
-			if battleResponse.Pokemon1ID != 1 || battleResponse.Pokemon2ID != 2 {
-				t.Errorf("expected Pokemon1ID to be 1 and Pokemon2ID to be 2; got %v and %v", battleResponse.Pokemon1ID, battleResponse.Pokemon2ID)
-			}
+			require.NoError(t, err)
+			require.Greater(t, battleResponse.ID, 0)
+			require.Equal(t, battleResponse.Pokemon1ID, 1)
+			require.Equal(t, battleResponse.Pokemon2ID, 2)
 		})
 	})
 
@@ -73,9 +66,7 @@ func TestBattle_IT(t *testing.T) {
 		req := createAuthenticatedRequest(t, "GET", "/battles/"+strconv.Itoa(b.ID), nil)
 
 		resp, err := s.App.Test(req, -1) // disable timeout
-		if err != nil {
-			t.Fatalf("error making request to server. Err: %v", err)
-		}
+		require.NoError(t, err)
 		defer resp.Body.Close()
 
 		if resp.StatusCode != http.StatusOK {
@@ -84,20 +75,13 @@ func TestBattle_IT(t *testing.T) {
 
 		var battleResponse models.Battle
 		err = json.NewDecoder(resp.Body).Decode(&battleResponse)
-		if err != nil {
-			t.Fatalf("error decoding response. Err: %v", err)
-		}
-
-		if battleResponse.ID != b.ID {
-			t.Errorf("expected battle ID to be %v; got %v", b.ID, battleResponse.ID)
-		}
+		require.NoError(t, err)
+		require.Equal(t, battleResponse.ID, b.ID)
 	})
 
 	t.Run("get-all", func(t *testing.T) {
 		initialBattles, err := battleSrv.GetAll(context.Background())
-		if err != nil {
-			t.Fatalf("error getting battles. Err: %v", err)
-		}
+		require.NoError(t, err)
 
 		// insert 10 battles
 		for i := 0; i < 10; i++ {
@@ -114,24 +98,15 @@ func TestBattle_IT(t *testing.T) {
 		req := createAuthenticatedRequest(t, "GET", "/battles", nil)
 
 		resp, err := s.App.Test(req, -1) // disable timeout
-		if err != nil {
-			t.Fatalf("error making request to server. Err: %v", err)
-		}
+		require.NoError(t, err)
 		defer resp.Body.Close()
 
-		if resp.StatusCode != http.StatusOK {
-			t.Errorf("expected status OK; got %v", resp.Status)
-		}
+		require.Equal(t, resp.StatusCode, http.StatusOK)
 
 		var battles []models.Battle
 		err = json.NewDecoder(resp.Body).Decode(&battles)
-		if err != nil {
-			t.Fatalf("error decoding response. Err: %v", err)
-		}
-
-		if len(battles) != len(initialBattles)+10 {
-			t.Errorf("expected %v battles; got %v", len(initialBattles)+10, len(battles))
-		}
+		require.NoError(t, err)
+		require.Equal(t, len(battles), len(initialBattles)+10)
 	})
 
 	t.Run("update", func(t *testing.T) {
@@ -149,31 +124,22 @@ func TestBattle_IT(t *testing.T) {
 		b.Turns = 20
 
 		body, err := json.Marshal(b)
-		if err != nil {
-			t.Fatalf("error marshalling battle. Err: %v", err)
-		}
+		require.NoError(t, err)
 
 		req := createAuthenticatedRequest(t, "PUT", "/battles/"+strconv.Itoa(b.ID), body)
 
 		resp, err := s.App.Test(req, -1) // disable timeout
-		if err != nil {
-			t.Fatalf("error making request to server. Err: %v", err)
-		}
+		require.NoError(t, err)
 		defer resp.Body.Close()
 
-		if resp.StatusCode != http.StatusOK {
-			t.Errorf("expected status OK; got %v", resp.Status)
-		}
+		require.Equal(t, resp.StatusCode, http.StatusOK)
 
 		// get the battle from the db
 		battle, err := battleSrv.GetByID(context.Background(), b.ID)
-		if err != nil {
-			t.Fatalf("error getting battle. Err: %v", err)
-		}
+		require.NoError(t, err)
 
-		if battle.WinnerID != b.WinnerID || battle.Turns != b.Turns {
-			t.Errorf("expected winner ID to be %v and turns to be %v; got %v and %v", b.WinnerID, b.Turns, battle.WinnerID, battle.Turns)
-		}
+		require.Equal(t, battle.WinnerID, b.WinnerID)
+		require.Equal(t, battle.Turns, b.Turns)
 	})
 
 	t.Run("delete", func(t *testing.T) {
@@ -189,24 +155,16 @@ func TestBattle_IT(t *testing.T) {
 		req := createAuthenticatedRequest(t, "DELETE", "/battles/"+strconv.Itoa(b.ID), nil)
 
 		resp, err := s.App.Test(req, -1) // disable timeout
-		if err != nil {
-			t.Fatalf("error making request to server. Err: %v", err)
-		}
+		require.NoError(t, err)
 		defer resp.Body.Close()
 
-		if resp.StatusCode != http.StatusNoContent {
-			t.Errorf("expected status NoContent; got %v", resp.Status)
-		}
+		require.Equal(t, resp.StatusCode, http.StatusNoContent)
 
 		// get the battle from the db
 		battle, err := battleSrv.GetByID(context.Background(), b.ID)
-		if err == nil {
-			t.Fatalf("expected error getting battle. Err: %v", err)
-		}
-
-		if battle.ID != 0 {
-			t.Errorf("expected battle ID to be 0; got %v", battle.ID)
-		}
+		require.Error(t, err)
+		require.ErrorIs(t, err, sql.ErrNoRows)
+		require.Equal(t, battle.ID, 0)
 	})
 }
 
@@ -217,9 +175,7 @@ func createAuthenticatedRequest(t *testing.T, method, path string, body []byte) 
 	t.Helper()
 
 	req, err := http.NewRequest(method, path, bytes.NewBuffer(body))
-	if err != nil {
-		t.Fatalf("error creating request. Err: %v", err)
-	}
+	require.NoError(t, err)
 
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Basic YXNoOmtldGNodW0=") // base64 for ash:ketchum
@@ -232,7 +188,5 @@ func createBattleUsingDB(t *testing.T, srv database.BattleCRUDService, b *models
 	t.Helper()
 
 	err := srv.Create(context.Background(), b)
-	if err != nil {
-		t.Fatalf("error inserting battle. Err: %v", err)
-	}
+	require.NoError(t, err)
 }

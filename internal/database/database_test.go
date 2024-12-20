@@ -3,26 +3,21 @@ package database
 import (
 	_ "embed"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestNew(t *testing.T) {
 	srv := MustNewWithDatabase(t)
-	if srv == nil {
-		t.Fatal("New() returned nil")
-	}
+	require.NotNil(t, srv)
 }
 
 func TestMustDB(t *testing.T) {
 	srv := service{}
 
-	defer func() {
-		if r := recover(); r == nil {
-			t.Errorf("TestMustDB should have panicked!")
-		}
-	}()
-
-	// debe lanzar un panic porque db es nil
-	srv.MustDB()
+	require.Panics(t, func() {
+		srv.MustDB()
+	})
 }
 
 func TestHealth(t *testing.T) {
@@ -30,23 +25,12 @@ func TestHealth(t *testing.T) {
 
 	stats := srv.Health()
 
-	if stats["status"] != "up" {
-		t.Fatalf("expected status to be up, got %s", stats["status"])
-	}
-
-	if _, ok := stats["error"]; ok {
-		t.Fatalf("expected error not to be present")
-	}
-
-	if stats["message"] != "It's healthy" {
-		t.Fatalf("expected message to be 'It's healthy', got %s", stats["message"])
-	}
+	require.Equal(t, "up", stats["status"])
+	require.Empty(t, stats["error"])
+	require.Equal(t, "It's healthy", stats["message"])
 }
 
 func TestClose(t *testing.T) {
 	srv := MustNewWithDatabase(t)
-
-	if srv.Close() != nil {
-		t.Fatalf("expected Close() to return nil")
-	}
+	require.NoError(t, srv.Close())
 }
