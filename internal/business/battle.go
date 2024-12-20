@@ -13,14 +13,26 @@ func Fight(diceSides int, pokemon1 models.Pokemon, pokemon2 models.Pokemon) mode
 		Pokemon2ID: pokemon2.ID,
 	}
 
+	initiativeDice := &SavageDice{
+		BaseDice: BaseDice{
+			Sides: initiativeDiceSides,
+		},
+	}
+
+	attackDice := &SavageDice{
+		BaseDice: BaseDice{
+			Sides: diceSides,
+		},
+	}
+
 	// Battle continues until one Pokemon's HP reaches 0
 	turns := 1
 	for {
 		// Decide who starts (1-100 roll)
 		var startRoll1, startRoll2 int
 		for startRoll1 == startRoll2 {
-			startRoll1 = savageDice(initiativeDiceSides)
-			startRoll2 = savageDice(initiativeDiceSides)
+			startRoll1 = initiativeDice.Roll()
+			startRoll2 = initiativeDice.Roll()
 		}
 
 		attacker, defender := &pokemon1, &pokemon2
@@ -28,11 +40,11 @@ func Fight(diceSides int, pokemon1 models.Pokemon, pokemon2 models.Pokemon) mode
 			attacker, defender = &pokemon2, &pokemon1
 		}
 
-		attack(diceSides, attacker, defender)
+		attack(attackDice, attacker, defender)
 
 		// If defender is still alive, they get to attack
 		if defender.HP > 0 {
-			attack(diceSides, defender, attacker)
+			attack(attackDice, defender, attacker)
 		}
 
 		// Determine winner, if one of them is without HP
@@ -52,13 +64,13 @@ func Fight(diceSides int, pokemon1 models.Pokemon, pokemon2 models.Pokemon) mode
 	return battle
 }
 
-func attack(diceSides int, attacker *models.Pokemon, defender *models.Pokemon) {
+func attack(dice Dice, attacker *models.Pokemon, defender *models.Pokemon) {
 	// Calculate attack value (base attack + dice roll)
-	attackRoll := savageDice(diceSides)
+	attackRoll := dice.Roll()
 	totalAttack := attacker.Attack + attackRoll
 
 	// Calculate defense value (base defense + dice roll)
-	defenseRoll := savageDice(diceSides)
+	defenseRoll := dice.Roll()
 	totalDefense := defender.Defense + defenseRoll
 
 	// If attack beats defense, reduce defender's HP
