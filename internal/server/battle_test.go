@@ -10,8 +10,6 @@ import (
 	"testing"
 
 	"pokemon-battle/internal/models"
-
-	"github.com/gofiber/fiber/v2"
 )
 
 // mockBattleService is used for testing the battle routes
@@ -61,8 +59,8 @@ func (m *mockBattleService) Delete(ctx context.Context, id int) error {
 
 func TestCreateBattle(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
-		app := fiber.New()
-		s := &FiberServer{App: app}
+		s := New()
+
 		battleRoutes := s.App.Group("/battles")
 
 		// init the battle routes from a mock battle service that doesn't return an error
@@ -81,7 +79,7 @@ func TestCreateBattle(t *testing.T) {
 			t.Fatalf("error creating request. Err: %v", err)
 		}
 
-		resp, err := app.Test(req)
+		resp, err := s.App.Test(req)
 		if err != nil {
 			t.Fatalf("error making request to server. Err: %v", err)
 		}
@@ -93,8 +91,7 @@ func TestCreateBattle(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
-		app := fiber.New()
-		s := &FiberServer{App: app}
+		s := New()
 		battleRoutes := s.App.Group("/battles")
 
 		// init the battle routes from a mock battle service that returns an error
@@ -117,7 +114,7 @@ func TestCreateBattle(t *testing.T) {
 			t.Fatalf("error creating request. Err: %v", err)
 		}
 
-		resp, err := app.Test(req)
+		resp, err := s.App.Test(req)
 		if err != nil {
 			t.Fatalf("error making request to server. Err: %v", err)
 		}
@@ -128,8 +125,7 @@ func TestCreateBattle(t *testing.T) {
 	})
 
 	t.Run("error/pokemon-failed", func(t *testing.T) {
-		app := fiber.New()
-		s := &FiberServer{App: app}
+		s := New()
 		battleRoutes := s.App.Group("/battles")
 
 		// init the battle routes from a mock battle service that returns an error
@@ -152,7 +148,7 @@ func TestCreateBattle(t *testing.T) {
 			t.Fatalf("error creating request. Err: %v", err)
 		}
 
-		resp, err := app.Test(req)
+		resp, err := s.App.Test(req)
 		if err != nil {
 			t.Fatalf("error making request to server. Err: %v", err)
 		}
@@ -165,8 +161,7 @@ func TestCreateBattle(t *testing.T) {
 
 func TestGetAllBattles(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
-		app := fiber.New()
-		s := &FiberServer{App: app}
+		s := New()
 		battleRoutes := s.App.Group("/battles")
 
 		// init the battle routes from a mock battle service that doesn't return an error
@@ -178,7 +173,7 @@ func TestGetAllBattles(t *testing.T) {
 			t.Fatalf("error creating request. Err: %v", err)
 		}
 
-		resp, err := app.Test(req)
+		resp, err := s.App.Test(req)
 		if err != nil {
 			t.Fatalf("error making request to server. Err: %v", err)
 		}
@@ -204,8 +199,7 @@ func TestGetAllBattles(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
-		app := fiber.New()
-		s := &FiberServer{App: app}
+		s := New()
 		battleRoutes := s.App.Group("/battles")
 
 		// init the battle routes from a mock battle service that returns an error
@@ -217,7 +211,7 @@ func TestGetAllBattles(t *testing.T) {
 			t.Fatalf("error creating request. Err: %v", err)
 		}
 
-		resp, err := app.Test(req)
+		resp, err := s.App.Test(req)
 		if err != nil {
 			t.Fatalf("error making request to server. Err: %v", err)
 		}
@@ -230,8 +224,7 @@ func TestGetAllBattles(t *testing.T) {
 
 func TestGetBattleByID(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
-		app := fiber.New()
-		s := &FiberServer{App: app}
+		s := New()
 		battleRoutes := s.App.Group("/battles")
 
 		// init the battle routes from a mock battle service that doesn't return an error
@@ -243,7 +236,7 @@ func TestGetBattleByID(t *testing.T) {
 			t.Fatalf("error creating request. Err: %v", err)
 		}
 
-		resp, err := app.Test(req)
+		resp, err := s.App.Test(req)
 		if err != nil {
 			t.Fatalf("error making request to server. Err: %v", err)
 		}
@@ -255,8 +248,7 @@ func TestGetBattleByID(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
-		app := fiber.New()
-		s := &FiberServer{App: app}
+		s := New()
 		battleRoutes := s.App.Group("/battles")
 
 		// init the battle routes from a mock battle service that returns an error
@@ -268,7 +260,7 @@ func TestGetBattleByID(t *testing.T) {
 			t.Fatalf("error creating request. Err: %v", err)
 		}
 
-		resp, err := app.Test(req)
+		resp, err := s.App.Test(req)
 		if err != nil {
 			t.Fatalf("error making request to server. Err: %v", err)
 		}
@@ -281,8 +273,7 @@ func TestGetBattleByID(t *testing.T) {
 
 func TestUpdateBattle(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
-		app := fiber.New()
-		s := &FiberServer{App: app}
+		s := New()
 		battleRoutes := s.App.Group("/battles")
 
 		// init the battle routes from a mock battle service that doesn't return an error
@@ -306,7 +297,7 @@ func TestUpdateBattle(t *testing.T) {
 			t.Fatalf("error creating request. Err: %v", err)
 		}
 
-		resp, err := app.Test(req)
+		resp, err := s.App.Test(req)
 		if err != nil {
 			t.Fatalf("error making request to server. Err: %v", err)
 		}
@@ -318,8 +309,7 @@ func TestUpdateBattle(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
-		app := fiber.New()
-		s := &FiberServer{App: app}
+		s := New()
 		battleRoutes := s.App.Group("/battles")
 
 		// init the battle routes from a mock battle service that returns an error
@@ -342,7 +332,7 @@ func TestUpdateBattle(t *testing.T) {
 			t.Fatalf("error creating request. Err: %v", err)
 		}
 
-		resp, err := app.Test(req)
+		resp, err := s.App.Test(req)
 		if err != nil {
 			t.Fatalf("error making request to server. Err: %v", err)
 		}
@@ -355,8 +345,7 @@ func TestUpdateBattle(t *testing.T) {
 
 func TestDeleteBattle(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
-		app := fiber.New()
-		s := &FiberServer{App: app}
+		s := New()
 		battleRoutes := s.App.Group("/battles")
 
 		// init the battle routes from a mock battle service that doesn't return an error
@@ -368,7 +357,7 @@ func TestDeleteBattle(t *testing.T) {
 			t.Fatalf("error creating request. Err: %v", err)
 		}
 
-		resp, err := app.Test(req)
+		resp, err := s.App.Test(req)
 		if err != nil {
 			t.Fatalf("error making request to server. Err: %v", err)
 		}
@@ -380,8 +369,7 @@ func TestDeleteBattle(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
-		app := fiber.New()
-		s := &FiberServer{App: app}
+		s := New()
 		battleRoutes := s.App.Group("/battles")
 
 		// init the battle routes from a mock battle service that returns an error
@@ -393,7 +381,7 @@ func TestDeleteBattle(t *testing.T) {
 			t.Fatalf("error creating request. Err: %v", err)
 		}
 
-		resp, err := app.Test(req)
+		resp, err := s.App.Test(req)
 		if err != nil {
 			t.Fatalf("error making request to server. Err: %v", err)
 		}

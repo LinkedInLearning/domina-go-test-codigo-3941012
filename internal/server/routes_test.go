@@ -4,15 +4,10 @@ import (
 	"io"
 	"net/http"
 	"testing"
-
-	"github.com/gofiber/fiber/v2"
 )
 
 func TestHandler(t *testing.T) {
-	// Create a Fiber app for testing
-	app := fiber.New()
-	// Inject the Fiber app into the server
-	s := &FiberServer{App: app}
+	s := New()
 
 	s.RegisterFiberRoutes(&mockPokemonService{hasError: false}, &mockBattleService{hasError: false})
 
@@ -25,7 +20,7 @@ func TestHandler(t *testing.T) {
 		}
 
 		// Perform the request
-		resp, err := app.Test(req)
+		resp, err := s.App.Test(req)
 		if err != nil {
 			t.Fatalf("error making request to server. Err: %v", err)
 		}

@@ -10,8 +10,6 @@ import (
 	"testing"
 
 	"pokemon-battle/internal/models"
-
-	"github.com/gofiber/fiber/v2"
 )
 
 // mockPokemonService is used for testing the pokemon routes
@@ -60,10 +58,7 @@ func (m *mockPokemonService) Update(ctx context.Context, pokemon models.Pokemon)
 
 func TestGetAllPokemons(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
-		// Create a Fiber app for testing
-		app := fiber.New()
-		// Inject the Fiber app into the server
-		s := &FiberServer{App: app}
+		s := New()
 
 		pokemonRoutes := s.App.Group("/pokemons")
 
@@ -77,7 +72,7 @@ func TestGetAllPokemons(t *testing.T) {
 			t.Fatalf("error creating request. Err: %v", err)
 		}
 		// Perform the request
-		resp, err := app.Test(req)
+		resp, err := s.App.Test(req)
 		if err != nil {
 			t.Fatalf("error making request to server. Err: %v", err)
 		}
@@ -110,10 +105,7 @@ func TestGetAllPokemons(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
-		// Create a Fiber app for testing
-		app := fiber.New()
-		// Inject the Fiber app into the server
-		s := &FiberServer{App: app}
+		s := New()
 
 		pokemonRoutes := s.App.Group("/pokemons")
 
@@ -127,7 +119,7 @@ func TestGetAllPokemons(t *testing.T) {
 			t.Fatalf("error creating request. Err: %v", err)
 		}
 		// Perform the request
-		resp, err := app.Test(req)
+		resp, err := s.App.Test(req)
 		if err != nil {
 			t.Fatalf("error making request to server. Err: %v", err)
 		}
@@ -140,8 +132,7 @@ func TestGetAllPokemons(t *testing.T) {
 
 func TestCreatePokemon(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
-		app := fiber.New()
-		s := &FiberServer{App: app}
+		s := New()
 		pokemonRoutes := s.App.Group("/pokemons")
 
 		// init the pokemon routes from a mock pokemon service that doesn't return an error
@@ -166,7 +157,7 @@ func TestCreatePokemon(t *testing.T) {
 			t.Fatalf("error creating request. Err: %v", err)
 		}
 
-		resp, err := app.Test(req)
+		resp, err := s.App.Test(req)
 		if err != nil {
 			t.Fatalf("error making request to server. Err: %v", err)
 		}
@@ -178,8 +169,7 @@ func TestCreatePokemon(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
-		app := fiber.New()
-		s := &FiberServer{App: app}
+		s := New()
 		pokemonRoutes := s.App.Group("/pokemons")
 
 		// init the pokemon routes from a mock pokemon service that returns an error
@@ -201,7 +191,7 @@ func TestCreatePokemon(t *testing.T) {
 			t.Fatalf("error creating request. Err: %v", err)
 		}
 
-		resp, err := app.Test(req)
+		resp, err := s.App.Test(req)
 		if err != nil {
 			t.Fatalf("error making request to server. Err: %v", err)
 		}
@@ -214,8 +204,7 @@ func TestCreatePokemon(t *testing.T) {
 
 func TestGetPokemonByID(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
-		app := fiber.New()
-		s := &FiberServer{App: app}
+		s := New()
 		pokemonRoutes := s.App.Group("/pokemons")
 
 		// init the pokemon routes from a mock pokemon service that doesn't return an error
@@ -227,7 +216,7 @@ func TestGetPokemonByID(t *testing.T) {
 			t.Fatalf("error creating request. Err: %v", err)
 		}
 
-		resp, err := app.Test(req)
+		resp, err := s.App.Test(req)
 		if err != nil {
 			t.Fatalf("error making request to server. Err: %v", err)
 		}
@@ -239,8 +228,7 @@ func TestGetPokemonByID(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
-		app := fiber.New()
-		s := &FiberServer{App: app}
+		s := New()
 		pokemonRoutes := s.App.Group("/pokemons")
 
 		// init the pokemon routes from a mock pokemon service that returns an error
@@ -252,7 +240,7 @@ func TestGetPokemonByID(t *testing.T) {
 			t.Fatalf("error creating request. Err: %v", err)
 		}
 
-		resp, err := app.Test(req)
+		resp, err := s.App.Test(req)
 		if err != nil {
 			t.Fatalf("error making request to server. Err: %v", err)
 		}
@@ -265,8 +253,7 @@ func TestGetPokemonByID(t *testing.T) {
 
 func TestUpdatePokemon(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
-		app := fiber.New()
-		s := &FiberServer{App: app}
+		s := New()
 		pokemonRoutes := s.App.Group("/pokemons")
 
 		// init the pokemon routes from a mock pokemon service that doesn't return an error
@@ -289,7 +276,7 @@ func TestUpdatePokemon(t *testing.T) {
 			t.Fatalf("error creating request. Err: %v", err)
 		}
 
-		resp, err := app.Test(req)
+		resp, err := s.App.Test(req)
 		if err != nil {
 			t.Fatalf("error making request to server. Err: %v", err)
 		}
@@ -301,8 +288,7 @@ func TestUpdatePokemon(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
-		app := fiber.New()
-		s := &FiberServer{App: app}
+		s := New()
 		pokemonRoutes := s.App.Group("/pokemons")
 
 		// init the pokemon routes from a mock pokemon service that returns an error
@@ -322,7 +308,7 @@ func TestUpdatePokemon(t *testing.T) {
 			t.Fatalf("error creating request. Err: %v", err)
 		}
 
-		resp, err := app.Test(req)
+		resp, err := s.App.Test(req)
 		if err != nil {
 			t.Fatalf("error making request to server. Err: %v", err)
 		}
@@ -335,8 +321,7 @@ func TestUpdatePokemon(t *testing.T) {
 
 func TestDeletePokemon(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
-		app := fiber.New()
-		s := &FiberServer{App: app}
+		s := New()
 		pokemonRoutes := s.App.Group("/pokemons")
 
 		// init the pokemon routes from a mock pokemon service that doesn't return an error
@@ -348,7 +333,7 @@ func TestDeletePokemon(t *testing.T) {
 			t.Fatalf("error creating request. Err: %v", err)
 		}
 
-		resp, err := app.Test(req)
+		resp, err := s.App.Test(req)
 		if err != nil {
 			t.Fatalf("error making request to server. Err: %v", err)
 		}
@@ -360,8 +345,7 @@ func TestDeletePokemon(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
-		app := fiber.New()
-		s := &FiberServer{App: app}
+		s := New()
 		pokemonRoutes := s.App.Group("/pokemons")
 
 		// init the pokemon routes from a mock pokemon service that returns an error
@@ -373,7 +357,7 @@ func TestDeletePokemon(t *testing.T) {
 			t.Fatalf("error creating request. Err: %v", err)
 		}
 
-		resp, err := app.Test(req)
+		resp, err := s.App.Test(req)
 		if err != nil {
 			t.Fatalf("error making request to server. Err: %v", err)
 		}

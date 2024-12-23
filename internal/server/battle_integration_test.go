@@ -10,13 +10,11 @@ import (
 
 	"pokemon-battle/internal/database"
 	"pokemon-battle/internal/models"
-
-	"github.com/gofiber/fiber/v2"
 )
 
 func TestBattle_IT(t *testing.T) {
-	app := fiber.New()
-	s := &FiberServer{App: app, diceSides: 6}
+	s := New()
+	s.diceSides = 6
 
 	databaseSrv := MustNewWithDatabase()
 	pokemonSrv := database.NewPokemonService(databaseSrv)
@@ -37,7 +35,7 @@ func TestBattle_IT(t *testing.T) {
 
 			req := createAuthenticatedRequest(t, "POST", "/battles", body)
 
-			resp, err := app.Test(req, -1) // disable timeout
+			resp, err := s.App.Test(req, -1) // disable timeout
 			if err != nil {
 				t.Fatalf("error making request to server. Err: %v", err)
 			}
@@ -74,7 +72,7 @@ func TestBattle_IT(t *testing.T) {
 
 		req := createAuthenticatedRequest(t, "GET", "/battles/"+strconv.Itoa(b.ID), nil)
 
-		resp, err := app.Test(req, -1) // disable timeout
+		resp, err := s.App.Test(req, -1) // disable timeout
 		if err != nil {
 			t.Fatalf("error making request to server. Err: %v", err)
 		}
@@ -115,7 +113,7 @@ func TestBattle_IT(t *testing.T) {
 
 		req := createAuthenticatedRequest(t, "GET", "/battles", nil)
 
-		resp, err := app.Test(req, -1) // disable timeout
+		resp, err := s.App.Test(req, -1) // disable timeout
 		if err != nil {
 			t.Fatalf("error making request to server. Err: %v", err)
 		}
@@ -157,7 +155,7 @@ func TestBattle_IT(t *testing.T) {
 
 		req := createAuthenticatedRequest(t, "PUT", "/battles/"+strconv.Itoa(b.ID), body)
 
-		resp, err := app.Test(req, -1) // disable timeout
+		resp, err := s.App.Test(req, -1) // disable timeout
 		if err != nil {
 			t.Fatalf("error making request to server. Err: %v", err)
 		}
@@ -190,7 +188,7 @@ func TestBattle_IT(t *testing.T) {
 
 		req := createAuthenticatedRequest(t, "DELETE", "/battles/"+strconv.Itoa(b.ID), nil)
 
-		resp, err := app.Test(req, -1) // disable timeout
+		resp, err := s.App.Test(req, -1) // disable timeout
 		if err != nil {
 			t.Fatalf("error making request to server. Err: %v", err)
 		}

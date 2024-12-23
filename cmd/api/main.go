@@ -6,7 +6,6 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"pokemon-battle/internal/business"
 	"pokemon-battle/internal/database"
 	"pokemon-battle/internal/server"
 	"strconv"
@@ -42,7 +41,7 @@ func gracefulShutdown(fiberServer *server.FiberServer, done chan bool) {
 
 func main() {
 
-	server := server.New(setupDiceSides())
+	server := server.New()
 
 	// Initialize the database service
 	srv := database.New()
@@ -66,12 +65,4 @@ func main() {
 	// Wait for the graceful shutdown to complete
 	<-done
 	log.Println("Graceful shutdown complete.")
-}
-
-func setupDiceSides() int {
-	sides, err := strconv.Atoi(os.Getenv("POKEMON_BATTLE_DICE_SIDES"))
-	if err != nil {
-		return business.DefaultDiceSides
-	}
-	return sides
 }
