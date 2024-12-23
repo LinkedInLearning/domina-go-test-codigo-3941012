@@ -28,6 +28,7 @@ func (d *BaseDice) Result() int {
 type SavageDice struct {
 	BaseDice
 	maxExplosions int
+	rolls         []int
 	Explosions    int
 }
 
@@ -53,10 +54,11 @@ func (d *SavageDice) Roll() int {
 	// repitiendo la tirada hasta que deje de explotar.
 	explosions := 0
 	for roll == d.Sides && maxRolls > 0 {
-		maxRolls--
 		roll = rand.Intn(d.Sides) + 1
+		d.rolls = append(d.rolls, roll)
 		sum += roll
 		if roll == d.Sides {
+			maxRolls--
 			explosions++
 		}
 	}

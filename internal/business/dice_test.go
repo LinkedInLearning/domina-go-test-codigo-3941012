@@ -34,6 +34,7 @@ func TestSavageDice(t *testing.T) {
 						BaseDice: BaseDice{
 							Sides: testCase.sides,
 						},
+						maxExplosions: 50,
 					}
 
 					roll := savageDice.Roll()
@@ -45,6 +46,7 @@ func TestSavageDice(t *testing.T) {
 					if roll > upperBound {
 						t.Fatalf("expected roll to be less than %d, got %d", upperBound, roll)
 					}
+					t.Logf("sides: %d, roll: %d, rolls: %v, explosions: %d, lowerBound: %d, upperBound: %d", testCase.sides, roll, savageDice.rolls, savageDice.Explosions, lowerBound, upperBound)
 				})
 			}
 		})
@@ -66,29 +68,38 @@ func TestSavageDice(t *testing.T) {
 	})
 
 	t.Run("base-dice-roll", func(t *testing.T) {
-		baseDice := &BaseDice{
-			Sides: 10,
+		testCases := []struct {
+			name  string
+			sides int
+		}{
+			{name: "100", sides: 100},
+			{name: "20", sides: 20},
+			{name: "12", sides: 12},
+			{name: "10", sides: 10},
+			{name: "8", sides: 8},
+			{name: "6", sides: 6},
+			{name: "4", sides: 4},
+			{name: "2", sides: 2},
+			{name: "1", sides: 1},
 		}
 
-		t.Run("roll", func(t *testing.T) {
-			roll := baseDice.Roll()
-			if roll < 1 {
-				t.Fatalf("expected roll to be greater than or equal to 1, got %d", roll)
-			}
-			if roll > baseDice.Sides {
-				t.Fatalf("expected roll to be less than or equal to %d, got %d", baseDice.Sides, roll)
-			}
-		})
+		for _, testCase := range testCases {
+			t.Run(testCase.name, func(t *testing.T) {
+				testCase := testCase
+				t.Parallel()
 
-		t.Run("roll-with-one-side", func(t *testing.T) {
-			oneSidedDice := &BaseDice{
-				Sides: 1,
-			}
+				baseDice := &BaseDice{
+					Sides: testCase.sides,
+				}
 
-			roll := oneSidedDice.Roll()
-			if roll != 1 {
-				t.Fatalf("expected roll to be 1, got %d", roll)
-			}
-		})
+				roll := baseDice.Roll()
+				if roll <= 0 {
+					t.Fatalf("expected roll to be greater than 0, got %d", roll)
+				}
+				if roll > baseDice.Sides {
+					t.Fatalf("expected roll to be less than or equal to %d, got %d", baseDice.Sides, roll)
+				}
+			})
+		}
 	})
 }
