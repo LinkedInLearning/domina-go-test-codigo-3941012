@@ -6,17 +6,46 @@ import (
 
 func TestSavageDice(t *testing.T) {
 	t.Run("savage-dice-roll", func(t *testing.T) {
-		savageDice := &SavageDice{
-			BaseDice: BaseDice{
-				Sides: 10,
-			},
-		}
+		t.Run("sides", func(t *testing.T) {
+			testCases := []struct {
+				name  string
+				sides int
+			}{
+				{name: "100", sides: 100},
+				{name: "20", sides: 20},
+				{name: "12", sides: 12},
+				{name: "10", sides: 10},
+				{name: "8", sides: 8},
+				{name: "6", sides: 6},
+				{name: "4", sides: 4},
+				{name: "2", sides: 2},
+			}
 
-		t.Run("roll", func(t *testing.T) {
-			roll := savageDice.Roll()
-			lowerBound := savageDice.Explosions * savageDice.Sides
-			if roll <= lowerBound {
-				t.Fatalf("expected roll to be greater than %d, got %d", lowerBound, roll)
+			for _, testCase := range testCases {
+				t.Run(testCase.name, func(t *testing.T) {
+					testCase := testCase
+					t.Parallel()
+
+					if testCase.sides <= 2 {
+						t.Skip("skipping test for dice with less than 2 sides")
+					}
+
+					savageDice := &SavageDice{
+						BaseDice: BaseDice{
+							Sides: testCase.sides,
+						},
+					}
+
+					roll := savageDice.Roll()
+					lowerBound := savageDice.Explosions * savageDice.Sides
+					upperBound := (savageDice.Explosions + 1) * savageDice.Sides
+					if roll < lowerBound {
+						t.Fatalf("expected roll to be greater than %d, got %d", lowerBound, roll)
+					}
+					if roll > upperBound {
+						t.Fatalf("expected roll to be less than %d, got %d", upperBound, roll)
+					}
+				})
 			}
 		})
 
