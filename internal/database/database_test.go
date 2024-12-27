@@ -12,6 +12,19 @@ func TestNew(t *testing.T) {
 	}
 }
 
+func TestMustDB(t *testing.T) {
+	srv := service{}
+
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("TestMustDB should have panicked!")
+		}
+	}()
+
+	// debe lanzar un panic porque db es nil
+	srv.MustDB()
+}
+
 func TestHealth(t *testing.T) {
 	srv := MustNewWithDatabase()
 
