@@ -11,52 +11,39 @@ import (
 
 	"pokemon-battle/internal/models"
 
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
 
-// mockBattleService is used for testing the battle routes
-// including the ability to return an error so we can test error handling
+// mockBattleService is used for testing the battle routes.
+// Implementes the BattleService interface using testify mock.
 type mockBattleService struct {
-	hasError bool
+	mock.Mock
 }
 
 func (m *mockBattleService) Create(ctx context.Context, battle *models.Battle) error {
-	if m.hasError {
-		return errors.New("mock error")
-	}
-	battle.ID = 1
-	return nil
+	args := m.Called(ctx, battle)
+	return args.Error(0)
 }
 
 func (m *mockBattleService) GetAll(ctx context.Context) ([]models.Battle, error) {
-	if m.hasError {
-		return nil, errors.New("mock error")
-	}
-	return []models.Battle{
-		{ID: 1, Pokemon1ID: 1, Pokemon2ID: 2, WinnerID: 1},
-		{ID: 2, Pokemon1ID: 3, Pokemon2ID: 4, WinnerID: 4},
-	}, nil
+	args := m.Called(ctx)
+	return args.Get(0).([]models.Battle), args.Error(1)
 }
 
 func (m *mockBattleService) GetByID(ctx context.Context, id int) (models.Battle, error) {
-	if m.hasError {
-		return models.Battle{}, errors.New("mock error")
-	}
-	return models.Battle{ID: id, Pokemon1ID: 1, Pokemon2ID: 2, WinnerID: 1}, nil
+	args := m.Called(ctx, id)
+	return args.Get(0).(models.Battle), args.Error(1)
 }
 
 func (m *mockBattleService) Update(ctx context.Context, battle models.Battle) error {
-	if m.hasError {
-		return errors.New("mock error")
-	}
-	return nil
+	args := m.Called(ctx, battle)
+	return args.Error(0)
 }
 
 func (m *mockBattleService) Delete(ctx context.Context, id int) error {
-	if m.hasError {
-		return errors.New("mock error")
-	}
-	return nil
+	args := m.Called(ctx, id)
+	return args.Error(0)
 }
 
 func TestCreateBattle(t *testing.T) {
@@ -66,7 +53,12 @@ func TestCreateBattle(t *testing.T) {
 		battleRoutes := s.App.Group("/battles")
 
 		// init the battle routes from a mock battle service that doesn't return an error
-		battleServer := battleServer{srv: &mockBattleService{hasError: false}, pokemonSrv: &mockPokemonService{hasError: false}, diceSides: 6}
+		mockBSrv := &mockBattleService{}
+		mockBSrv.On("Create", mock.Anything, mock.Anything).Return(nil)
+		mockPSrv := &mockPokemonService{}
+		mockPSrv.On("GetByID", mock.Anything, mock.Anything).Return(models.Pokemon{}, nil)
+
+		battleServer := battleServer{srv: mockBSrv, pokemonSrv: mockPSrv, diceSides: 6}
 		battleRoutes.Post("/", battleServer.CreateBattle)
 
 		battle := models.Battle{
@@ -92,7 +84,12 @@ func TestCreateBattle(t *testing.T) {
 
 		// init the battle routes from a mock battle service that returns an error
 		// the pokemon service is mocked to not return an error
-		battleServer := battleServer{srv: &mockBattleService{hasError: true}, pokemonSrv: &mockPokemonService{hasError: false}, diceSides: 6}
+		mockBSrv := &mockBattleService{}
+		mockBSrv.On("Create", mock.Anything, mock.Anything).Return(errors.New("mock error"))
+		mockPSrv := &mockPokemonService{}
+		mockPSrv.On("GetByID", mock.Anything, mock.Anything).Return(models.Pokemon{}, nil)
+
+		battleServer := battleServer{srv: mockBSrv, pokemonSrv: mockPSrv, diceSides: 6}
 		battleRoutes.Post("/", battleServer.CreateBattle)
 
 		battle := models.Battle{
@@ -118,7 +115,12 @@ func TestCreateBattle(t *testing.T) {
 
 		// init the battle routes from a mock battle service that returns an error
 		// the pokemon service is mocked to not return an error
-		battleServer := battleServer{srv: &mockBattleService{hasError: false}, pokemonSrv: &mockPokemonService{hasError: true}, diceSides: 6}
+		mockBSrv := &mockBattleService{}
+		mockBSrv.On("Create", mock.Anything, mock.Anything).Return(nil)
+		mockPSrv := &mockPokemonService{}
+		mockPSrv.On("GetByID", mock.Anything, mock.Anything).Return(models.Pokemon{}, errors.New("mock error"))
+
+		battleServer := battleServer{srv: mockBSrv, pokemonSrv: mockPSrv, diceSides: 6}
 		battleRoutes.Post("/", battleServer.CreateBattle)
 
 		battle := models.Battle{
@@ -145,7 +147,14 @@ func TestGetAllBattles(t *testing.T) {
 		battleRoutes := s.App.Group("/battles")
 
 		// init the battle routes from a mock battle service that doesn't return an error
-		battleServer := battleServer{srv: &mockBattleService{hasError: false}}
+		// and a slice of two battles
+		mockBSrv := &mockBattleService{}
+		mockBSrv.On("GetAll", mock.Anything).Return([]models.Battle{
+			{ID: 1, Pokemon1ID: 1, Pokemon2ID: 2, WinnerID: 1},
+			{ID: 2, Pokemon1ID: 3, Pokemon2ID: 4, WinnerID: 4},
+		}, nil)
+
+		battleServer := battleServer{srv: mockBSrv}
 		battleRoutes.Get("/", battleServer.GetAllBattles)
 
 		req, err := http.NewRequest("GET", "/battles", nil)
@@ -171,7 +180,10 @@ func TestGetAllBattles(t *testing.T) {
 		battleRoutes := s.App.Group("/battles")
 
 		// init the battle routes from a mock battle service that returns an error
-		battleServer := battleServer{srv: &mockBattleService{hasError: true}}
+		mockBSrv := &mockBattleService{}
+		mockBSrv.On("GetAll", mock.Anything).Return([]models.Battle{}, errors.New("mock error"))
+
+		battleServer := battleServer{srv: mockBSrv}
 		battleRoutes.Get("/", battleServer.GetAllBattles)
 
 		req, err := http.NewRequest("GET", "/battles", nil)
@@ -189,7 +201,10 @@ func TestGetBattleByID(t *testing.T) {
 		battleRoutes := s.App.Group("/battles")
 
 		// init the battle routes from a mock battle service that doesn't return an error
-		battleServer := battleServer{srv: &mockBattleService{hasError: false}}
+		mockBSrv := &mockBattleService{}
+		mockBSrv.On("GetByID", mock.Anything, mock.Anything).Return(models.Battle{ID: 1, Pokemon1ID: 1, Pokemon2ID: 2, WinnerID: 1}, nil)
+
+		battleServer := battleServer{srv: mockBSrv}
 		battleRoutes.Get("/:id", battleServer.GetBattleByID)
 
 		req, err := http.NewRequest("GET", "/battles/1", nil)
@@ -207,7 +222,10 @@ func TestGetBattleByID(t *testing.T) {
 		battleRoutes := s.App.Group("/battles")
 
 		// init the battle routes from a mock battle service that returns an error
-		battleServer := battleServer{srv: &mockBattleService{hasError: true}}
+		mockBSrv := &mockBattleService{}
+		mockBSrv.On("GetByID", mock.Anything, mock.Anything).Return(models.Battle{}, errors.New("mock error"))
+
+		battleServer := battleServer{srv: mockBSrv}
 		battleRoutes.Get("/:id", battleServer.GetBattleByID)
 
 		req, err := http.NewRequest("GET", "/battles/1", nil)
@@ -226,7 +244,10 @@ func TestUpdateBattle(t *testing.T) {
 		battleRoutes := s.App.Group("/battles")
 
 		// init the battle routes from a mock battle service that doesn't return an error
-		battleServer := battleServer{srv: &mockBattleService{hasError: false}}
+		mockBSrv := &mockBattleService{}
+		mockBSrv.On("Update", mock.Anything, mock.Anything).Return(nil)
+
+		battleServer := battleServer{srv: mockBSrv}
 		battleRoutes.Put("/:id", battleServer.UpdateBattle)
 
 		battle := models.Battle{
@@ -254,7 +275,10 @@ func TestUpdateBattle(t *testing.T) {
 		battleRoutes := s.App.Group("/battles")
 
 		// init the battle routes from a mock battle service that returns an error
-		battleServer := battleServer{srv: &mockBattleService{hasError: true}}
+		mockBSrv := &mockBattleService{}
+		mockBSrv.On("Update", mock.Anything, mock.Anything).Return(errors.New("mock error"))
+
+		battleServer := battleServer{srv: mockBSrv}
 		battleRoutes.Put("/:id", battleServer.UpdateBattle)
 
 		battle := models.Battle{
@@ -282,7 +306,10 @@ func TestDeleteBattle(t *testing.T) {
 		battleRoutes := s.App.Group("/battles")
 
 		// init the battle routes from a mock battle service that doesn't return an error
-		battleServer := battleServer{srv: &mockBattleService{hasError: false}}
+		mockBSrv := &mockBattleService{}
+		mockBSrv.On("Delete", mock.Anything, mock.Anything).Return(nil)
+
+		battleServer := battleServer{srv: mockBSrv}
 		battleRoutes.Delete("/:id", battleServer.DeleteBattle)
 
 		req, err := http.NewRequest("DELETE", "/battles/1", nil)
@@ -300,7 +327,10 @@ func TestDeleteBattle(t *testing.T) {
 		battleRoutes := s.App.Group("/battles")
 
 		// init the battle routes from a mock battle service that returns an error
-		battleServer := battleServer{srv: &mockBattleService{hasError: true}}
+		mockBSrv := &mockBattleService{}
+		mockBSrv.On("Delete", mock.Anything, mock.Anything).Return(errors.New("mock error"))
+
+		battleServer := battleServer{srv: mockBSrv}
 		battleRoutes.Delete("/:id", battleServer.DeleteBattle)
 
 		req, err := http.NewRequest("DELETE", "/battles/1", nil)

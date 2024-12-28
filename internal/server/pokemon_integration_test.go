@@ -11,6 +11,7 @@ import (
 	"pokemon-battle/internal/database"
 	"pokemon-battle/internal/models"
 
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -21,7 +22,13 @@ func TestPokemon_IT(t *testing.T) {
 	pokemonSrv := database.NewPokemonService(databaseSrv)
 
 	// the battle service is mocked because it's not needed for this test
-	s.RegisterFiberRoutes(pokemonSrv, &mockBattleService{hasError: true})
+	mockBSrv := &mockBattleService{}
+	mockBSrv.On("GetAll", mock.Anything).Return([]models.Battle{}, nil)
+	mockBSrv.On("GetByID", mock.Anything, mock.Anything).Return(models.Battle{}, nil)
+	mockBSrv.On("Update", mock.Anything, mock.Anything).Return(nil)
+	mockBSrv.On("Delete", mock.Anything, mock.Anything).Return(nil)
+
+	s.RegisterFiberRoutes(pokemonSrv, mockBSrv)
 
 	t.Run("create", func(t *testing.T) {
 		t.Run("post-ok", func(t *testing.T) {

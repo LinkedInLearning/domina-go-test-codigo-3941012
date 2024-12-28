@@ -3,15 +3,29 @@ package server
 import (
 	"io"
 	"net/http"
+	"pokemon-battle/internal/models"
 	"testing"
 
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
 
 func TestHandler(t *testing.T) {
 	s := New()
 
-	s.RegisterFiberRoutes(&mockPokemonService{hasError: false}, &mockBattleService{hasError: false})
+	mockPSrv := &mockPokemonService{}
+	mockPSrv.On("GetAll", mock.Anything).Return([]models.Pokemon{}, nil)
+	mockPSrv.On("GetByID", mock.Anything, mock.Anything).Return(models.Pokemon{}, nil)
+	mockPSrv.On("Update", mock.Anything, mock.Anything).Return(nil)
+	mockPSrv.On("Delete", mock.Anything, mock.Anything).Return(nil)
+
+	mockBSrv := &mockBattleService{}
+	mockBSrv.On("GetAll", mock.Anything).Return([]models.Battle{}, nil)
+	mockBSrv.On("GetByID", mock.Anything, mock.Anything).Return(models.Battle{}, nil)
+	mockBSrv.On("Update", mock.Anything, mock.Anything).Return(nil)
+	mockBSrv.On("Delete", mock.Anything, mock.Anything).Return(nil)
+
+	s.RegisterFiberRoutes(mockPSrv, mockBSrv)
 
 	t.Run("get/", func(t *testing.T) {
 		// Create a test HTTP request
