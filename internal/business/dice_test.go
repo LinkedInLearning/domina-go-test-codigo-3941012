@@ -5,9 +5,15 @@ import (
 )
 
 func testSavageRoll(t *testing.T, sides int) {
+	// t.Helper() es una función que nos permite indicar que la función es una función de ayuda,
+	// y que por tanto no es una función de test. El toolchain de Go ocultará el nombre
+	// de la función de ayuda, de manera que podremos localizar el fallo en nuestro código de forma más directa.
 	t.Helper()
 
 	if sides <= 2 {
+		// t.Skip() es una función que nos permite saltar un test.
+		// En este caso, saltamos el test para dados con menos de 2 caras,
+		// ya que no son válidos.
 		t.Skip("skipping test for dice with less than 2 sides")
 	}
 
