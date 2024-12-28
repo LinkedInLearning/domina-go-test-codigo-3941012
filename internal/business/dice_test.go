@@ -25,7 +25,7 @@ func testSavageRoll(t *testing.T, sides int) {
 	}
 
 	roll := savageDice.Roll()
-	lowerBound := savageDice.Explosions * savageDice.Sides
+	lowerBound := savageDice.Explosions*savageDice.Sides + 1
 	upperBound := (savageDice.Explosions + 1) * savageDice.Sides
 	if roll < lowerBound {
 		t.Fatalf("expected roll to be greater than %d, got %d", lowerBound, roll)
