@@ -15,6 +15,30 @@ type DiceTestSuite struct {
 	sides int
 }
 
+// SetupSuite es llamado antes de que se ejecuten los tests de la suite.
+// Normalmente se utiliza para inicializar el estado de la suite.
+func (s *DiceTestSuite) SetupSuite() {
+	s.T().Logf("SetupSuite: sides = %d", s.sides)
+}
+
+// SetupTest es llamado antes de cada test.
+// Normalmente se utiliza para reinicializar el estado de la suite.
+func (s *DiceTestSuite) SetupTest() {
+	s.T().Logf("SetupTest: sides = %d", s.sides)
+}
+
+// TearDownTest es llamado después de cada test.
+// Normalmente se utiliza para limpiar el estado de la suite.
+func (s *DiceTestSuite) TearDownTest() {
+	s.T().Logf("TearDownTest: sides = %d", s.sides)
+}
+
+// TearDownSuite es llamado después de que se ejecuten los tests de la suite.
+// Normalmente se utiliza para limpiar el estado de la suite.
+func (s *DiceTestSuite) TearDownSuite() {
+	s.T().Logf("TearDownSuite: sides = %d", s.sides)
+}
+
 // Todos los métodos que comiencen por `Test` son tests de la suite.
 func (s *DiceTestSuite) TestSavageRoll() {
 	testSavageRoll(s.T(), s.sides)
