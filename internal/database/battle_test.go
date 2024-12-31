@@ -10,7 +10,7 @@ import (
 )
 
 func TestNewBattleService(t *testing.T) {
-	dbService := database.MustNewWithDatabase()
+	dbService := database.MustNewWithDatabase(t)
 
 	srv := database.NewBattleService(dbService)
 

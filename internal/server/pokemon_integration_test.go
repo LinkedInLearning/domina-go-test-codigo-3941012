@@ -14,7 +14,7 @@ import (
 func TestPokemon_IT(t *testing.T) {
 	s := New()
 
-	databaseSrv := MustNewWithDatabase()
+	databaseSrv := MustNewWithDatabase(t)
 	pokemonSrv := database.NewPokemonService(databaseSrv)
 
 	// the battle service is mocked because it's not needed for this test

@@ -16,7 +16,7 @@ func TestBattle_IT(t *testing.T) {
 	s := New()
 	s.diceSides = 6
 
-	databaseSrv := MustNewWithDatabase()
+	databaseSrv := MustNewWithDatabase(t)
 	pokemonSrv := database.NewPokemonService(databaseSrv)
 	battleSrv := database.NewBattleService(databaseSrv)
 

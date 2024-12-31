@@ -6,7 +6,7 @@ import (
 )
 
 func TestNew(t *testing.T) {
-	srv := MustNewWithDatabase()
+	srv := MustNewWithDatabase(t)
 	if srv == nil {
 		t.Fatal("New() returned nil")
 	}
@@ -26,7 +26,7 @@ func TestMustDB(t *testing.T) {
 }
 
 func TestHealth(t *testing.T) {
-	srv := MustNewWithDatabase()
+	srv := MustNewWithDatabase(t)
 
 	stats := srv.Health()
 
@@ -44,7 +44,7 @@ func TestHealth(t *testing.T) {
 }
 
 func TestClose(t *testing.T) {
-	srv := MustNewWithDatabase()
+	srv := MustNewWithDatabase(t)
 
 	if srv.Close() != nil {
 		t.Fatalf("expected Close() to return nil")

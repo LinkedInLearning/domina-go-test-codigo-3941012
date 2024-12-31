@@ -5,6 +5,7 @@ import (
 	_ "embed"
 	"path/filepath"
 	"pokemon-battle/internal/database"
+	"testing"
 	"time"
 
 	"github.com/testcontainers/testcontainers-go"
@@ -12,7 +13,7 @@ import (
 	"github.com/testcontainers/testcontainers-go/wait"
 )
 
-func MustNewWithDatabase() database.Service {
+func MustNewWithDatabase(t *testing.T) database.Service {
 	baseDir := filepath.Join("..", "database", "testdata")
 
 	var (
@@ -36,6 +37,7 @@ func MustNewWithDatabase() database.Service {
 				WithOccurrence(2).
 				WithStartupTimeout(5*time.Second)),
 	)
+	testcontainers.CleanupContainer(t, dbContainer)
 	if err != nil {
 		panic(err)
 	}

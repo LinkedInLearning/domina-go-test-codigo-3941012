@@ -4,6 +4,7 @@ import (
 	"context"
 	_ "embed"
 	"path/filepath"
+	"testing"
 	"time"
 
 	"github.com/testcontainers/testcontainers-go"
@@ -15,7 +16,7 @@ import (
 // It's using Testcontainers to run a PostgreSQL container, returning a new Service.
 // The database is initialized with the SQL files in the testdata directory.
 // Use this function in integration tests to obtain a new database.
-func MustNewWithDatabase() Service {
+func MustNewWithDatabase(t *testing.T) Service {
 	var (
 		dbName         = "pokemon_battles"
 		dbPwd          = "postgres"
@@ -37,6 +38,7 @@ func MustNewWithDatabase() Service {
 				WithOccurrence(2).
 				WithStartupTimeout(5*time.Second)),
 	)
+	testcontainers.CleanupContainer(t, dbContainer)
 	if err != nil {
 		panic(err)
 	}
