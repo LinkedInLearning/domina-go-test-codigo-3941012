@@ -23,11 +23,16 @@ type mockBattleService struct {
 
 func (m *mockBattleService) Create(ctx context.Context, battle *models.Battle) error {
 	args := m.Called(ctx, battle)
+	// devuelve el error que se le pasa en el test,
+	// que está en la posición 0 de los argumentos.
 	return args.Error(0)
 }
 
 func (m *mockBattleService) GetAll(ctx context.Context) ([]models.Battle, error) {
 	args := m.Called(ctx)
+	// devuelve el slice de battles que se le pasa en el test,
+	// y el error que se le pasa en el test,
+	// que están en la posición 0 y 1 de los argumentos, respectivamente.
 	return args.Get(0).([]models.Battle), args.Error(1)
 }
 
