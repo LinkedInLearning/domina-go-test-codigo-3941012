@@ -26,6 +26,26 @@ func MustNewWithDatabase(t *testing.T) Service {
 		insertsSQLFile = filepath.Join("testdata", "01-inserts.sql")
 	)
 
+	/*
+		req := testcontainers.ContainerRequest{
+			Image: "postgres:latest",
+			Env: map[string]string{
+				"POSTGRES_USER":     "postgres",
+				"POSTGRES_PASSWORD": "postgres",
+				"POSTGRES_DB":       "postgres",
+			},
+			ExposedPorts: []string{"5432/tcp"},
+			Cmd:          []string{"postgres", "-c", "fsync=off"},
+		}
+
+		genericContainerReq := testcontainers.GenericContainerRequest{
+			ContainerRequest: req,
+			Started:          true,
+		}
+
+		dbContainer, err := testcontainers.GenericContainer(ctx, genericContainerReq)
+	*/
+
 	dbContainer, err := postgres.Run(
 		context.Background(),
 		"postgres:latest",
