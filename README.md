@@ -1,57 +1,37 @@
-# Project pokemon-battle
+# Domina Go: Test de código
 
-This application has been created with the following command, using the [go-blueprint](https://github.com/Melkeydev/go-blueprint/) tool:
+Este es el repositorio del curso de LinkedIn Learning `Domina Go: Test de código`. El curso completo está disponible en [LinkedIn Learning][lil-course-url].
 
-```bash
-go-blueprint create --name pokemon-battle --framework fiber --driver postgres --advanced --feature docker --feature react --feature githubaction --git skip
-```
+![Nombre completo del curso][lil-thumbnail-url] 
 
-## Getting Started
+Consulta el archivo Readme en la rama main para obtener instrucciones e información actualizadas.
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+Mejora tus habilidades en Go aprendiendo a implementar pruebas de código efectivas y robustas. Este curso está dirigido a desarrolladores que desean escribir aplicaciones más confiables, abarcando desde pruebas básicas con la librería estándar hasta técnicas avanzadas. Aprende a simplificar tus pruebas unitarias con Testify, estructurar pruebas más expresivas con Ginkgo e integrar Testcontainers para validar la interacción con servicios externos como bases de datos o contenedores. Con un enfoque práctico y directo, desarrollarás las herramientas necesarias para garantizar la calidad y estabilidad de tu código en Go.
 
-## MakeFile
+## Instrucciones
 
-Run build make command with tests
-```bash
-make all
-```
+Este repositorio tiene ramas (branches) para cada uno de los vídeos del curso. Puedes usar el menú emergente de la rama en GitHub para cambiar a una rama específica y echar un vistazo al curso en esa etapa, o puedes añadir `/tree/nombre_de_la_rama` a la URL para ir a la rama a la que quieres acceder.
 
-Build the application
-```bash
-make build
-```
+## Ramas
 
-Run the application
-```bash
-make run
-```
-Create DB container
-```bash
-make docker-run
-```
+Las ramas están estructuradas para corresponder a los vídeos del curso. La convención de nomenclatura es Capítulo#_Vídeo#. Por ejemplo, la rama denominada `02_03` corresponde al segundo capítulo y al tercer vídeo de ese capítulo. Algunas ramas tendrán un estado inicial y otro final. Están marcadas con las letras i («inicio») y f («fin»). La branch i tiene el mismo código que al principio del vídeo. La branch f tiene el mismo código que al final del vídeo. La rama master tiene el estado final del código que aparece en el curso.
 
-Shutdown DB Container
-```bash
-make docker-down
-```
+## Instalación
 
-DB Integrations Test:
-```bash
-make itest
-```
+1. Para utilizar estos archivos de ejercicios, debes tener descargado lo siguiente:
+   - [software]
 
-Live reload the application:
-```bash
-make watch
-```
+2. Clona este repositorio en tu máquina local usando la Terminal (macOS) o CMD (Windows), o una herramienta GUI como SourceTree.
+3. [Instrucciones específicas del curso].
 
-Run the test suite:
-```bash
-make test
-```
+### Docente
 
-Clean up binary from the last build:
-```bash
-make clean
-```
+**Manuel de la Peña**
+
+Echa un vistazo a mis otros cursos en [LinkedIn Learning](https://www.linkedin.com/learning/instructors/manuel-de-la-pena).
+
+[0]: # (Replace these placeholder URLs with actual course URLs)
+[lil-course-url]: https://www.linkedin.com
+[lil-thumbnail-url]: https:
+
+[1]: # (End of ES-Instruction ###############################################################################################)

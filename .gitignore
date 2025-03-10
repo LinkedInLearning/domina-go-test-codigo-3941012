@@ -32,5 +32,10 @@ main
 # OS X generated file
 .DS_Store
 
+# Node.js
+node_modules
+.tmp
+npm-debug.log
+
 # LinkedIn
 .linkedin/
