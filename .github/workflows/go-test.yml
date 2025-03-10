@@ -4,6 +4,10 @@ on: [push, pull_request]
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        branch: [main, testify, ginkgo, testcontainers]
 
     steps:
       - uses: actions/checkout@v4
@@ -12,7 +16,11 @@ jobs:
         with:
           go-version-file: go.mod
 
+      - name: Git checkout
+        run: git checkout ${{ matrix.branch }}
+
       - name: Build
         run: go build -v ./...
+
       - name: Test with the Go CLI
-        run: go test ./... 
+        run: go test -v timeout=300s ./... 
